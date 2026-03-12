@@ -1,0 +1,78 @@
+{
+  "name": "autoicd-js",
+  "version": "0.4.0",
+  "description": "ICD-10 medical coding SDK — convert clinical text to ICD-10-CM diagnosis codes with AI-powered NLP. Automated medical coding, PHI de-identification, and ICD-10 code search for EHR, billing, and health-tech apps.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "icd-10",
+    "icd10",
+    "icd-10-cm",
+    "icd-10-api",
+    "icd-10-lookup",
+    "icd-10-search",
+    "icd-10-code",
+    "medical-coding",
+    "medical-billing",
+    "clinical-nlp",
+    "clinical-text",
+    "diagnosis-codes",
+    "healthcare",
+    "health-tech",
+    "ehr",
+    "emr",
+    "nlp",
+    "phi-deidentification",
+    "hipaa",
+    "medical-ai",
+    "revenue-cycle-management",
+    "snomed-ct",
+    "umls",
+    "medical-coding-api",
+    "code-search",
+    "autoicd",
+    "autoicd-api"
+  ],
+  "author": "AutoICD",
+  "license": "MIT",
+  "homepage": "https://autoicdapi.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fcggamou/autoicd-js"
+  },
+  "bugs": {
+    "url": "https://github.com/fcggamou/autoicd-js/issues"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://autoicdapi.com"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

@@ -1,0 +1,275 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { AutoICD, AuthenticationError, RateLimitError, NotFoundError, AutoICDError } from "../src/index.js";
+import type { CodingResponse, CodeSearchResponse, AnonymizeResponse, CodeDetail } from "../src/index.js";
+
+// ─── Mock Helpers ───
+
+function mockFetch(status: number, body: unknown, headers?: Record<string, string>) {
+  return vi.fn().mockResolvedValue({
+    ok: status >= 200 && status < 300,
+    status,
+    json: () => Promise.resolve(body),
+    headers: new Headers({
+      "X-RateLimit-Limit": "1000",
+      "X-RateLimit-Remaining": "999",
+      "X-RateLimit-Reset": "2026-03-11T00:00:00Z",
+      ...headers,
+    }),
+  });
+}
+
+function createClient(fetchFn: ReturnType<typeof vi.fn>) {
+  return new AutoICD({
+    apiKey: "sk_test1234",
+    baseURL: "https://test.autoicdapi.com",
+    fetch: fetchFn as typeof globalThis.fetch,
+  });
+}
+
+// ─── Tests ───
+
+describe("AutoICD", () => {
+  it("throws if apiKey is empty", () => {
+    expect(() => new AutoICD({ apiKey: "" })).toThrow("apiKey is required");
+  });
+
+  it("strips trailing slashes from baseURL", () => {
+    const fetch = mockFetch(200, { text: "", provider: "", entity_count: 0, entities: [] });
+    const client = new AutoICD({ apiKey: "sk_x", baseURL: "https://example.com///", fetch: fetch as typeof globalThis.fetch });
+    client.code("test");
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/^https:\/\/example\.com\/api/),
+      expect.anything()
+    );
+  });
+});
+
+describe("code()", () => {
+  const mockResponse: CodingResponse = {
+    text: "Patient has diabetes",
+    provider: "default",
+    entity_count: 1,
+    entities: [
+      {
+        entity_text: "diabetes",
+        entity_start: 12,
+        entity_end: 20,
+        negated: false,
+        historical: false,
+        family_history: false,
+        uncertain: false,
+        severity: null,
+        codes: [
+          {
+            code: "E11.9",
+            description: "Type 2 diabetes mellitus without complications",
+            similarity: 0.92,
+            confidence: "high",
+            matched_term: "diabetes mellitus",
+          },
+        ],
+      },
+    ],
+  };
+
+  it("sends correct request and returns coding response", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    const result = await client.code("Patient has diabetes");
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://test.autoicdapi.com/api/v1/code",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          Authorization: "Bearer sk_test1234",
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ text: "Patient has diabetes" }),
+      })
+    );
+    expect(result.entity_count).toBe(1);
+    expect(result.entities[0].codes[0].code).toBe("E11.9");
+  });
+
+  it("sends options as snake_case fields", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    await client.code("test", { topK: 3, includeNegated: false });
+
+    const body = JSON.parse(fetch.mock.calls[0][1].body);
+    expect(body).toEqual({
+      text: "test",
+      top_k: 3,
+      include_negated: false,
+    });
+  });
+
+  it("omits undefined options from body", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    await client.code("test", { topK: 3 });
+
+    const body = JSON.parse(fetch.mock.calls[0][1].body);
+    expect(body).toEqual({ text: "test", top_k: 3 });
+    expect(body).not.toHaveProperty("include_negated");
+  });
+});
+
+describe("codes.search()", () => {
+  const mockResponse: CodeSearchResponse = {
+    query: "diabetes",
+    count: 1,
+    codes: [
+      { code: "E11.9", short_description: "T2DM", long_description: "Type 2 diabetes mellitus without complications", is_billable: true },
+    ],
+  };
+
+  it("sends correct search request", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    const result = await client.codes.search("diabetes");
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://test.autoicdapi.com/api/v1/codes/search?q=diabetes",
+      expect.objectContaining({ method: "GET" })
+    );
+    expect(result.codes[0].code).toBe("E11.9");
+  });
+
+  it("includes limit param", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    await client.codes.search("diabetes", { limit: 5 });
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://test.autoicdapi.com/api/v1/codes/search?q=diabetes&limit=5",
+      expect.anything()
+    );
+  });
+});
+
+describe("codes.get()", () => {
+  const mockResponse: CodeDetail = {
+    code: "E11.9",
+    short_description: "T2DM",
+    long_description: "Type 2 diabetes mellitus without complications",
+    is_billable: true,
+  };
+
+  it("fetches code details with URL encoding", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    await client.codes.get("E11.9");
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://test.autoicdapi.com/api/v1/codes/E11.9",
+      expect.anything()
+    );
+  });
+});
+
+describe("anonymize()", () => {
+  const mockResponse: AnonymizeResponse = {
+    original_text: "John Smith has COPD",
+    anonymized_text: "[NAME] has COPD",
+    pii_count: 1,
+    pii_entities: [
+      { text: "John Smith", start: 0, end: 10, label: "NAME", replacement: "[NAME]" },
+    ],
+  };
+
+  it("sends anonymize request", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    const result = await client.anonymize("John Smith has COPD");
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://test.autoicdapi.com/api/v1/anonymize",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ text: "John Smith has COPD" }),
+      })
+    );
+    expect(result.pii_count).toBe(1);
+    expect(result.anonymized_text).toBe("[NAME] has COPD");
+  });
+});
+
+describe("error handling", () => {
+  it("throws AuthenticationError on 401", async () => {
+    const fetch = mockFetch(401, { error: "Invalid API key" });
+    const client = createClient(fetch);
+
+    await expect(client.code("test")).rejects.toThrow(AuthenticationError);
+  });
+
+  it("throws RateLimitError on 429", async () => {
+    const fetch = mockFetch(
+      429,
+      { error: "Rate limit exceeded", limit: 100, resetAt: "2026-03-11T00:00:00Z" },
+      { "X-RateLimit-Remaining": "0" }
+    );
+    const client = createClient(fetch);
+
+    try {
+      await client.code("test");
+      expect.unreachable();
+    } catch (err) {
+      expect(err).toBeInstanceOf(RateLimitError);
+      if (err instanceof RateLimitError) {
+        expect(err.rateLimit.remaining).toBe(0);
+      }
+    }
+  });
+
+  it("throws NotFoundError on 404", async () => {
+    const fetch = mockFetch(404, { error: "Code not found" });
+    const client = createClient(fetch);
+
+    await expect(client.codes.get("INVALID")).rejects.toThrow(NotFoundError);
+  });
+
+  it("throws AutoICDError on other errors", async () => {
+    const fetch = mockFetch(502, { error: "Pipeline unavailable" });
+    const client = createClient(fetch);
+
+    await expect(client.code("test")).rejects.toThrow(AutoICDError);
+  });
+});
+
+describe("rate limit parsing", () => {
+  it("populates lastRateLimit from response headers", async () => {
+    const fetch = mockFetch(200, { text: "", provider: "", entity_count: 0, entities: [] });
+    const client = createClient(fetch);
+
+    await client.code("test");
+
+    expect(client.lastRateLimit).toEqual({
+      limit: 1000,
+      remaining: 999,
+      resetAt: new Date("2026-03-11T00:00:00Z"),
+    });
+  });
+
+  it("sets lastRateLimit to null when headers are missing", async () => {
+    const fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ text: "", provider: "", entity_count: 0, entities: [] }),
+      headers: new Headers(),
+    });
+    const client = createClient(fetch);
+
+    await client.code("test");
+
+    expect(client.lastRateLimit).toBeNull();
+  });
+});
