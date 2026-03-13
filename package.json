@@ -1,6 +1,6 @@
 {
   "name": "autoicd-js",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "ICD-10 & ICD-11 medical coding SDK — convert clinical text to ICD-10-CM and ICD-11 diagnosis codes with AI-powered NLP. Automated medical coding, PHI de-identification, code search, and ICD-10/ICD-11 crosswalk for EHR, billing, and health-tech apps.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
