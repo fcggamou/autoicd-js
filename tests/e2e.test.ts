@@ -183,8 +183,8 @@ describe.skipIf(!RUN_E2E)("E2E sync tests", () => {
     expect(result.anonymized_text).toContain("[");
   });
 
-  it("GET /codes/search — response matches CodeSearchResponse shape", async () => {
-    const result: CodeSearchResponse = await client.codes.search("diabetes", { limit: 5 });
+  it("GET /icd10/codes/search — response matches CodeSearchResponse shape", async () => {
+    const result: CodeSearchResponse = await client.icd10.search("diabetes", { limit: 5 });
 
     expect(typeof result.query).toBe("string");
     expect(result.query).toBe("diabetes");
@@ -198,8 +198,8 @@ describe.skipIf(!RUN_E2E)("E2E sync tests", () => {
     }
   });
 
-  it("GET /codes/:code — response matches CodeDetailFull shape", async () => {
-    const result: CodeDetailFull = await client.codes.get("E11.9");
+  it("GET /icd10/codes/:code — response matches CodeDetailFull shape", async () => {
+    const result: CodeDetailFull = await client.icd10.get("E11.9");
 
     assertCodeDetailFull(result);
 
@@ -218,7 +218,7 @@ describe.skipIf(!RUN_E2E)("E2E sync tests", () => {
   });
 
   it("rate limit headers are parsed", async () => {
-    await client.codes.search("test", { limit: 1 });
+    await client.icd10.search("test", { limit: 1 });
 
     expect(client.lastRateLimit).not.toBeNull();
     expect(typeof client.lastRateLimit!.limit).toBe("number");
@@ -259,11 +259,12 @@ describe.skipIf(!RUN_E2E)("E2E sync tests", () => {
   });
 
   it("no unexpected extra fields in code detail response", async () => {
-    const result = await client.codes.get("I10");
+    const result = await client.icd10.get("I10");
 
     const allowedFull = [
       "code", "short_description", "long_description", "is_billable",
       "synonyms", "cross_references", "parent", "children", "chapter", "block",
+      "icd11_mappings",
     ];
     for (const key of Object.keys(result)) {
       expect(allowedFull).toContain(key);

@@ -32,7 +32,7 @@ export class AutoICD {
   lastRateLimit: RateLimit | null = null;
 
   /** Sub-resource for ICD-10 code lookup. */
-  readonly codes: Codes;
+  readonly icd10: ICD10Codes;
 
   /** Sub-resource for ICD-11 code lookup. */
   readonly icd11: ICD11Codes;
@@ -45,7 +45,7 @@ export class AutoICD {
     this.baseURL = (options.baseURL ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
     this.timeout = options.timeout ?? DEFAULT_TIMEOUT;
     this._fetch = options.fetch ?? globalThis.fetch;
-    this.codes = new Codes(this);
+    this.icd10 = new ICD10Codes(this);
     this.icd11 = new ICD11Codes(this);
   }
 
@@ -159,9 +159,9 @@ export class AutoICD {
   }
 }
 
-// ─── Codes Sub-resource ───
+// ─── ICD-10 Codes Sub-resource ───
 
-class Codes {
+class ICD10Codes {
   constructor(private readonly client: AutoICD) {}
 
   /**
@@ -169,14 +169,14 @@ class Codes {
    *
    * @example
    * ```ts
-   * const results = await autoicd.codes.search("diabetes mellitus");
+   * const results = await autoicd.icd10.search("diabetes mellitus");
    * ```
    */
   async search(query: string, options?: SearchOptions): Promise<CodeSearchResponse> {
     const params = new URLSearchParams({ q: query });
     if (options?.limit !== undefined) params.set("limit", String(options.limit));
     if (options?.offset !== undefined) params.set("offset", String(options.offset));
-    return this.client.get<CodeSearchResponse>(`/api/v1/codes/search?${params}`);
+    return this.client.get<CodeSearchResponse>(`/api/v1/icd10/codes/search?${params}`);
   }
 
   /**
@@ -185,7 +185,7 @@ class Codes {
    *
    * @example
    * ```ts
-   * const detail = await autoicd.codes.get("E11.9");
+   * const detail = await autoicd.icd10.get("E11.9");
    * console.log(detail.long_description);
    * console.log(detail.synonyms.snomed);  // SNOMED CT synonyms
    * console.log(detail.chapter?.title);   // "Endocrine, Nutritional and Metabolic Diseases"
@@ -193,7 +193,7 @@ class Codes {
    * ```
    */
   async get(code: string): Promise<CodeDetailFull> {
-    return this.client.get<CodeDetailFull>(`/api/v1/codes/${encodeURIComponent(code)}`);
+    return this.client.get<CodeDetailFull>(`/api/v1/icd10/codes/${encodeURIComponent(code)}`);
   }
 
 }

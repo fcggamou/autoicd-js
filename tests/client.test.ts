@@ -119,7 +119,7 @@ describe("code()", () => {
   });
 });
 
-describe("codes.search()", () => {
+describe("icd10.search()", () => {
   const mockResponse: CodeSearchResponse = {
     query: "diabetes",
     count: 1,
@@ -132,10 +132,10 @@ describe("codes.search()", () => {
     const fetch = mockFetch(200, mockResponse);
     const client = createClient(fetch);
 
-    const result = await client.codes.search("diabetes");
+    const result = await client.icd10.search("diabetes");
 
     expect(fetch).toHaveBeenCalledWith(
-      "https://test.autoicdapi.com/api/v1/codes/search?q=diabetes",
+      "https://test.autoicdapi.com/api/v1/icd10/codes/search?q=diabetes",
       expect.objectContaining({ method: "GET" })
     );
     expect(result.codes[0].code).toBe("E11.9");
@@ -145,16 +145,16 @@ describe("codes.search()", () => {
     const fetch = mockFetch(200, mockResponse);
     const client = createClient(fetch);
 
-    await client.codes.search("diabetes", { limit: 5 });
+    await client.icd10.search("diabetes", { limit: 5 });
 
     expect(fetch).toHaveBeenCalledWith(
-      "https://test.autoicdapi.com/api/v1/codes/search?q=diabetes&limit=5",
+      "https://test.autoicdapi.com/api/v1/icd10/codes/search?q=diabetes&limit=5",
       expect.anything()
     );
   });
 });
 
-describe("codes.get()", () => {
+describe("icd10.get()", () => {
   const mockResponse: CodeDetail = {
     code: "E11.9",
     short_description: "T2DM",
@@ -166,10 +166,10 @@ describe("codes.get()", () => {
     const fetch = mockFetch(200, mockResponse);
     const client = createClient(fetch);
 
-    await client.codes.get("E11.9");
+    await client.icd10.get("E11.9");
 
     expect(fetch).toHaveBeenCalledWith(
-      "https://test.autoicdapi.com/api/v1/codes/E11.9",
+      "https://test.autoicdapi.com/api/v1/icd10/codes/E11.9",
       expect.anything()
     );
   });
@@ -328,7 +328,7 @@ describe("error handling", () => {
     const fetch = mockFetch(404, { error: "Code not found" });
     const client = createClient(fetch);
 
-    await expect(client.codes.get("INVALID")).rejects.toThrow(NotFoundError);
+    await expect(client.icd10.get("INVALID")).rejects.toThrow(NotFoundError);
   });
 
   it("throws AutoICDError on other errors", async () => {

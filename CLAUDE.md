@@ -17,7 +17,7 @@ npm run test:watch   # vitest (watch mode)
 ```
 src/
 ├── index.ts      — Public exports (re-exports client, types, errors)
-├── client.ts     — AutoICD class + Codes sub-resource + HTTP internals
+├── client.ts     — AutoICD class + ICD10/ICD11 sub-resources + HTTP internals
 ├── types.ts      — All request/response interfaces
 └── errors.ts     — AutoICDError hierarchy (401, 404, 429)
 tests/
@@ -35,8 +35,8 @@ const client = new AutoICD({ apiKey: "sk_..." });
 
 client.code(text, options?)       // POST /api/v1/code — clinical text → ICD-10 codes
 client.anonymize(text)            // POST /api/v1/anonymize — PHI de-identification
-client.codes.search(query, opts?) // GET  /api/v1/codes/search — search ICD-10 codes
-client.codes.get(code)            // GET  /api/v1/codes/:code — code details
+client.icd10.search(query, opts?) // GET  /api/v1/icd10/codes/search — search ICD-10 codes
+client.icd10.get(code)            // GET  /api/v1/icd10/codes/:code — code details
 client.lastRateLimit              // Rate limit info from last response
 ```
 
