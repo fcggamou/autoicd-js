@@ -9,6 +9,8 @@ import type {
   AnonymizeResponse,
   RateLimit,
   ErrorBody,
+  ICD11CodeSearchResponse,
+  ICD11CodeDetailFull,
 } from "./types.js";
 import {
   AutoICDError,
@@ -32,6 +34,9 @@ export class AutoICD {
   /** Sub-resource for ICD-10 code lookup. */
   readonly codes: Codes;
 
+  /** Sub-resource for ICD-11 code lookup. */
+  readonly icd11: ICD11Codes;
+
   constructor(options: AutoICDOptions) {
     if (!options.apiKey) {
       throw new Error("apiKey is required");
@@ -41,6 +46,7 @@ export class AutoICD {
     this.timeout = options.timeout ?? DEFAULT_TIMEOUT;
     this._fetch = options.fetch ?? globalThis.fetch;
     this.codes = new Codes(this);
+    this.icd11 = new ICD11Codes(this);
   }
 
   // ─── Public Methods ───
@@ -61,6 +67,7 @@ export class AutoICD {
       text,
       top_k: options?.topK,
       include_negated: options?.includeNegated,
+      output_system: options?.outputSystem,
     });
   }
 
@@ -189,6 +196,43 @@ class Codes {
     return this.client.get<CodeDetailFull>(`/api/v1/codes/${encodeURIComponent(code)}`);
   }
 
+}
+
+// ─── ICD-11 Codes Sub-resource ───
+
+class ICD11Codes {
+  constructor(private readonly client: AutoICD) {}
+
+  /**
+   * Search ICD-11 codes by description.
+   *
+   * @example
+   * ```ts
+   * const results = await autoicd.icd11.search("diabetes mellitus");
+   * ```
+   */
+  async search(query: string, options?: SearchOptions): Promise<ICD11CodeSearchResponse> {
+    const params = new URLSearchParams({ q: query });
+    if (options?.limit !== undefined) params.set("limit", String(options.limit));
+    if (options?.offset !== undefined) params.set("offset", String(options.offset));
+    return this.client.get<ICD11CodeSearchResponse>(`/api/v1/icd11/codes/search?${params}`);
+  }
+
+  /**
+   * Get comprehensive details for a single ICD-11 code, including synonyms,
+   * hierarchy (parent/children), chapter, and ICD-10 crosswalk mappings.
+   *
+   * @example
+   * ```ts
+   * const detail = await autoicd.icd11.get("5A11");
+   * console.log(detail.long_description);
+   * console.log(detail.chapter?.title);
+   * console.log(detail.icd10_mappings);
+   * ```
+   */
+  async get(code: string): Promise<ICD11CodeDetailFull> {
+    return this.client.get<ICD11CodeDetailFull>(`/api/v1/icd11/codes/${encodeURIComponent(code)}`);
+  }
 }
 
 // ─── Helpers ───

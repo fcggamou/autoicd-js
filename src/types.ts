@@ -18,6 +18,8 @@ export interface CodeOptions {
   topK?: number;
   /** Include negated entities in results. Defaults to true. */
   includeNegated?: boolean;
+  /** Output coding system: `"icd10"` (default) or `"icd11"`. */
+  outputSystem?: "icd10" | "icd11";
 }
 
 export interface CodeMatch {
@@ -111,6 +113,8 @@ export interface CodeDetailFull extends CodeDetail {
   chapter: ChapterInfo | null;
   /** Code block range (e.g., `"E08-E13"`). */
   block: string | null;
+  /** ICD-11 crosswalk mappings (present when ICD-11 data is available). */
+  icd11_mappings?: CrosswalkMapping[];
 }
 export interface CodeSearchResponse {
   /** The search query that was used. */
@@ -156,6 +160,74 @@ export interface RateLimit {
   remaining: number;
   /** UTC timestamp when the limit resets. */
   resetAt: Date;
+}
+
+// ─── ICD-11 ───
+
+export interface ICD11CodeDetail {
+  /** ICD-11 code (e.g., `"5A11"`). */
+  code: string;
+  /** Abbreviated description. */
+  short_description: string;
+  /** Full official description. */
+  long_description: string;
+  /** ICD-11 Foundation URI, or `null` if unavailable. */
+  foundation_uri: string | null;
+}
+
+export interface ICD11ChapterInfo {
+  /** Chapter number. */
+  number: number;
+  /** Chapter title. */
+  title: string;
+}
+
+export interface CrosswalkMapping {
+  /** Mapped code (ICD-10 or ICD-11). */
+  code: string;
+  /** Code description. */
+  description: string;
+  /** Mapping relationship: `"equivalent"`, `"narrower"`, `"broader"`, or `"approximate"`. */
+  mapping_type: string;
+  /** Target coding system: `"icd10"` or `"icd11"`. */
+  system: string;
+}
+
+export interface ICD11CodeDetailFull extends ICD11CodeDetail {
+  /** Synonyms grouped by source. */
+  synonyms: Record<string, string[]>;
+  /** Cross-reference IDs grouped by source. */
+  cross_references: Record<string, string[]>;
+  /** Parent code in the ICD-11 hierarchy, or `null` for top-level categories. */
+  parent: ICD11CodeDetail | null;
+  /** Direct child codes in the ICD-11 hierarchy. */
+  children: ICD11CodeDetail[];
+  /** ICD-11 chapter this code belongs to. */
+  chapter: ICD11ChapterInfo | null;
+  /** Block within the chapter. */
+  block: string | null;
+  /** ICD-10 crosswalk mappings for this ICD-11 code. */
+  icd10_mappings: CrosswalkMapping[];
+}
+
+export interface ICD11CodeSearchResult {
+  /** ICD-11 code. */
+  code: string;
+  /** Abbreviated description. */
+  short_description: string;
+  /** Full official description. */
+  long_description: string;
+  /** ICD-11 Foundation URI, or `null` if unavailable. */
+  foundation_uri: string | null;
+}
+
+export interface ICD11CodeSearchResponse {
+  /** The search query that was used. */
+  query: string;
+  /** Number of results returned. */
+  count: number;
+  /** Matching ICD-11 codes. */
+  codes: ICD11CodeSearchResult[];
 }
 
 // ─── Error ───

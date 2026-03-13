@@ -14,6 +14,12 @@ export type {
   PIIEntity,
   AnonymizeResponse,
   RateLimit,
+  ICD11CodeDetail,
+  ICD11ChapterInfo,
+  CrosswalkMapping,
+  ICD11CodeDetailFull,
+  ICD11CodeSearchResult,
+  ICD11CodeSearchResponse,
 } from "./types.js";
 
 export {
