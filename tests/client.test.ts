@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AutoICD, AuthenticationError, RateLimitError, NotFoundError, AutoICDError } from "../src/index.js";
-import type { CodingResponse, CodeSearchResponse, AnonymizeResponse, CodeDetail } from "../src/index.js";
+import type { CodingResponse, CodeSearchResponse, AnonymizeResponse, CodeDetail, ICD11CodeSearchResponse, ICD11CodeDetailFull } from "../src/index.js";
 
 // ─── Mock Helpers ───
 
@@ -200,6 +200,100 @@ describe("anonymize()", () => {
     );
     expect(result.pii_count).toBe(1);
     expect(result.anonymized_text).toBe("[NAME] has COPD");
+  });
+});
+
+describe("icd11.search()", () => {
+  const mockResponse: ICD11CodeSearchResponse = {
+    query: "diabetes",
+    count: 1,
+    codes: [
+      {
+        code: "5A11",
+        short_description: "Type 2 diabetes mellitus",
+        long_description: "Type 2 diabetes mellitus",
+        foundation_uri: "http://id.who.int/icd/entity/1691003785",
+      },
+    ],
+  };
+
+  it("sends correct search request", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    const result = await client.icd11.search("diabetes");
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://test.autoicdapi.com/api/v1/icd11/codes/search?q=diabetes",
+      expect.objectContaining({ method: "GET" })
+    );
+    expect(result.codes[0].code).toBe("5A11");
+    expect(result.codes[0].foundation_uri).toBe("http://id.who.int/icd/entity/1691003785");
+  });
+
+  it("includes limit param", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    await client.icd11.search("diabetes", { limit: 5 });
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://test.autoicdapi.com/api/v1/icd11/codes/search?q=diabetes&limit=5",
+      expect.anything()
+    );
+  });
+});
+
+describe("icd11.get()", () => {
+  const mockResponse: ICD11CodeDetailFull = {
+    code: "5A11",
+    short_description: "Type 2 diabetes mellitus",
+    long_description: "Type 2 diabetes mellitus",
+    foundation_uri: "http://id.who.int/icd/entity/1691003785",
+    synonyms: { index_terms: ["DM2", "NIDDM"] },
+    cross_references: { snomed: ["44054006"], umls: ["C0011860"] },
+    parent: {
+      code: "5A1",
+      short_description: "Diabetes mellitus",
+      long_description: "Diabetes mellitus",
+      foundation_uri: null,
+    },
+    children: [],
+    chapter: { number: 5, title: "Endocrine, nutritional or metabolic diseases" },
+    block: "5A10-5A14",
+    icd10_mappings: [
+      {
+        code: "E11.9",
+        description: "Type 2 diabetes mellitus without complications",
+        mapping_type: "equivalent",
+        system: "icd10",
+      },
+    ],
+  };
+
+  it("fetches ICD-11 code details with URL encoding", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    const result = await client.icd11.get("5A11");
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://test.autoicdapi.com/api/v1/icd11/codes/5A11",
+      expect.anything()
+    );
+    expect(result.code).toBe("5A11");
+    expect(result.foundation_uri).toBe("http://id.who.int/icd/entity/1691003785");
+    expect(result.parent?.code).toBe("5A1");
+    expect(result.chapter?.number).toBe(5);
+    expect(result.icd10_mappings[0].code).toBe("E11.9");
+    expect(result.icd10_mappings[0].mapping_type).toBe("equivalent");
+  });
+
+  it("returns 404 for unknown ICD-11 code", async () => {
+    const fetch = mockFetch(404, { error: "Code not found" });
+    const client = createClient(fetch);
+
+    await expect(client.icd11.get("INVALID")).rejects.toThrow(NotFoundError);
   });
 });
 
