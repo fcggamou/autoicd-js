@@ -1,7 +1,7 @@
 {
   "name": "autoicd-js",
-  "version": "0.4.0",
-  "description": "ICD-10 medical coding SDK — convert clinical text to ICD-10-CM diagnosis codes with AI-powered NLP. Automated medical coding, PHI de-identification, and ICD-10 code search for EHR, billing, and health-tech apps.",
+  "version": "0.5.1",
+  "description": "ICD-10 & ICD-11 medical coding SDK — convert clinical text to ICD-10-CM and ICD-11 diagnosis codes with AI-powered NLP. Automated medical coding, PHI de-identification, code search, and ICD-10/ICD-11 crosswalk for EHR, billing, and health-tech apps.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -50,6 +50,10 @@
     "umls",
     "medical-coding-api",
     "code-search",
+    "icd-11",
+    "icd11",
+    "icd-11-api",
+    "icd-10-icd-11-crosswalk",
     "autoicd",
     "autoicd-api"
   ],

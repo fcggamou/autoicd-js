@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-blue.svg)](https://www.typescriptlang.org/)
 
-Official TypeScript SDK for the [AutoICD API](https://autoicdapi.com) — clinical text to ICD-10-CM diagnosis codes, powered by AI and medical NLP.
+Official TypeScript SDK for the [AutoICD API](https://autoicdapi.com) — clinical text to ICD-10-CM and ICD-11 diagnosis codes, powered by AI and medical NLP.
 
 Zero dependencies. Works in **Node.js 18+**, **Deno**, **Bun**, and **edge runtimes**.
 
@@ -16,8 +16,9 @@ Zero dependencies. Works in **Node.js 18+**, **Deno**, **Bun**, and **edge runti
 
 | | |
 |---|---|
-| **AI-Powered ICD-10 Coding** | Clinical NLP extracts diagnoses from free-text notes and maps them to ICD-10-CM codes — no manual lookup required |
+| **AI-Powered ICD-10 & ICD-11 Coding** | Clinical NLP extracts diagnoses from free-text notes and maps them to ICD-10-CM or ICD-11 codes — no manual lookup required |
 | **74,000+ ICD-10-CM Codes** | Full 2025 code set enriched with SNOMED CT synonyms for comprehensive matching |
+| **ICD-11 Support** | Search and look up ICD-11 codes, with full ICD-10 ↔ ICD-11 crosswalk mappings |
 | **Negation & Context Detection** | Knows the difference between "patient has diabetes" and "patient denies diabetes" — flags negated, historical, uncertain, and family-history mentions |
 | **PHI De-identification** | HIPAA-compliant anonymization of names, dates, SSNs, phone numbers, emails, addresses, MRNs, and ages |
 | **Confidence Scoring** | Every code match includes a similarity score and confidence level so you can set your own acceptance thresholds |
@@ -123,6 +124,47 @@ console.log(detail.long_description);  // "Type 2 diabetes mellitus without comp
 console.log(detail.is_billable);       // true
 console.log(detail.synonyms.snomed);   // ["Diabetes mellitus type 2", ...]
 console.log(detail.chapter?.title);    // "Endocrine, Nutritional and Metabolic Diseases"
+```
+
+### ICD-11 Code Search
+
+Search the ICD-11 code set by description. The AutoICD API includes the full WHO ICD-11 MMS hierarchy.
+
+```ts
+const results = await autoicd.icd11.search("diabetes mellitus");
+// results.codes → [{ code: "5A11", short_description: "...", foundation_uri: "..." }, ...]
+
+const results = await autoicd.icd11.search("heart failure", { limit: 5 });
+```
+
+### ICD-11 Code Details & Crosswalk
+
+Get full details for any ICD-11 code — descriptions, Foundation URI, hierarchy, synonyms, and ICD-10 crosswalk mappings.
+
+```ts
+const detail = await autoicd.icd11.get("5A11");
+console.log(detail.code);              // "5A11"
+console.log(detail.short_description); // "Type 2 diabetes mellitus"
+console.log(detail.foundation_uri);    // "http://id.who.int/icd/entity/1691003785"
+console.log(detail.chapter?.title);    // "Endocrine, nutritional or metabolic diseases"
+
+// ICD-10 crosswalk
+for (const mapping of detail.icd10_mappings) {
+  console.log(`${mapping.code} — ${mapping.description} (${mapping.mapping_type})`);
+  // "E11.9 — Type 2 diabetes mellitus without complications (equivalent)"
+}
+```
+
+### ICD-10 → ICD-11 Crosswalk
+
+ICD-10 code details now include ICD-11 crosswalk mappings when available:
+
+```ts
+const detail = await autoicd.codes.get("E11.9");
+for (const mapping of detail.icd11_mappings ?? []) {
+  console.log(`${mapping.code} — ${mapping.description}`);
+  // "5A11 — Type 2 diabetes mellitus"
+}
 ```
 
 ### PHI De-identification
@@ -236,7 +278,9 @@ Full REST API documentation at [autoicdapi.com/docs](https://autoicdapi.com/docs
 | `autoicd.code(text, options?)` | Code clinical text to ICD-10-CM diagnoses |
 | `autoicd.anonymize(text)` | De-identify PHI/PII in clinical text |
 | `autoicd.codes.search(query, options?)` | Search ICD-10-CM codes by description |
-| `autoicd.codes.get(code)` | Get details for an ICD-10-CM code |
+| `autoicd.codes.get(code)` | Get details for an ICD-10-CM code (incl. ICD-11 crosswalk) |
+| `autoicd.icd11.search(query, options?)` | Search ICD-11 codes by description |
+| `autoicd.icd11.get(code)` | Get details for an ICD-11 code (incl. ICD-10 crosswalk) |
 
 ---
 
@@ -255,6 +299,10 @@ import type {
   AnonymizeResponse,
   PIIEntity,
   RateLimit,
+  ICD11CodeDetail,
+  ICD11CodeDetailFull,
+  ICD11CodeSearchResponse,
+  CrosswalkMapping,
 } from "autoicd";
 ```
 
@@ -272,6 +320,8 @@ import type {
 - [AutoICD API](https://autoicdapi.com) — Homepage and API key management
 - [API Documentation](https://autoicdapi.com/docs) — Full REST API reference
 - [ICD-10-CM Code Directory](https://autoicdapi.com/icd10) — Browse all 74,000+ diagnosis codes
+- [ICD-11 Code Directory](https://autoicdapi.com/icd11) — Browse the WHO ICD-11 MMS hierarchy
+- [ICD-10 ↔ ICD-11 Crosswalk](https://autoicdapi.com/icd10-to-icd11) — Map codes between revisions
 - [ICD-10 Codes by Condition](https://autoicdapi.com/icd10/condition) — Find codes for common conditions
 - [Python SDK](https://pypi.org/project/autoicd/) — `pip install autoicd`
 - [MCP Server](https://www.npmjs.com/package/autoicd-mcp) — For Claude Desktop, Cursor, VS Code
