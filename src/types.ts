@@ -113,8 +113,8 @@ export interface CodeDetailFull extends CodeDetail {
   chapter: ChapterInfo | null;
   /** Code block range (e.g., `"E08-E13"`). */
   block: string | null;
-  /** ICD-11 crosswalk mappings (present when ICD-11 data is available). */
-  icd11_mappings?: CrosswalkMapping[];
+  /** ICD-11 crosswalk mappings for this ICD-10 code. */
+  icd11_mappings: CrosswalkMapping[];
 }
 export interface CodeSearchResponse {
   /** The search query that was used. */
