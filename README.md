@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-blue.svg)](https://www.typescriptlang.org/)
 
-Official TypeScript SDK for the [AutoICD API](https://autoicdapi.com) — clinical text to ICD-10-CM and ICD-11 diagnosis codes, powered by AI and medical NLP.
+Official TypeScript SDK for the [AutoICD API](https://autoicdapi.com) — AI medical coding that converts clinical text to ICD-10-CM and ICD-11 diagnosis codes using medical NLP. Automate ICD-10 coding in your application.
 
 Zero dependencies. Works in **Node.js 18+**, **Deno**, **Bun**, and **edge runtimes**.
 
