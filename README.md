@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-blue.svg)](https://www.typescriptlang.org/)
 
-Official TypeScript SDK for the [AutoICD API](https://autoicdapi.com) — AI medical coding that converts clinical text to ICD-10-CM and ICD-11 diagnosis codes using medical NLP. Automate ICD-10 coding in your application.
+Official TypeScript SDK for the [AutoICD API](https://autoicdapi.com) — AI medical coding that converts clinical text to ICD-10-CM, ICD-11, and ICF codes using medical NLP. Automate ICD-10 coding, ICF functioning classification, and disability assessment in your application.
 
 Zero dependencies. Works in **Node.js 18+**, **Deno**, **Bun**, and **edge runtimes**.
 
@@ -16,9 +16,10 @@ Zero dependencies. Works in **Node.js 18+**, **Deno**, **Bun**, and **edge runti
 
 | | |
 |---|---|
-| **AI-Powered ICD-10 & ICD-11 Coding** | Clinical NLP extracts diagnoses from free-text notes and maps them to ICD-10-CM or ICD-11 codes — no manual lookup required |
+| **AI-Powered ICD-10, ICD-11 & ICF Coding** | Clinical NLP extracts diagnoses from free-text notes and maps them to ICD-10-CM, ICD-11, or ICF codes — no manual lookup required |
 | **74,000+ ICD-10-CM Codes** | Full 2025 code set enriched with SNOMED CT synonyms for comprehensive matching |
 | **ICD-11 Support** | Search and look up ICD-11 codes, with full ICD-10 ↔ ICD-11 crosswalk mappings |
+| **ICF Functioning Codes** | Code clinical text to WHO ICF categories, search 1,400+ codes, and access Core Sets for 12+ conditions |
 | **Negation & Context Detection** | Knows the difference between "patient has diabetes" and "patient denies diabetes" — flags negated, historical, uncertain, and family-history mentions |
 | **PHI De-identification** | HIPAA-compliant anonymization of names, dates, SSNs, phone numbers, emails, addresses, MRNs, and ages |
 | **Confidence Scoring** | Every code match includes a similarity score and confidence level so you can set your own acceptance thresholds |
@@ -167,6 +168,30 @@ for (const mapping of detail.icd11_mappings ?? []) {
 }
 ```
 
+### ICF Functioning Codes
+
+Code clinical text to WHO ICF categories, look up codes, search, and access ICF Core Sets for 12+ conditions.
+
+```typescript
+// Code clinical text to ICF categories
+const icf = await client.icf.code("Patient with stroke and hemiplegia");
+console.log(icf.results[0].codes);
+// [{ code: "b730", description: "Muscle power functions", component: "b", ... }]
+
+// Look up an ICF code
+const code = await client.icf.lookup("d450");
+console.log(code.title); // "Walking"
+console.log(code.definition); // "Moving along a surface on foot..."
+
+// Search ICF codes
+const results = await client.icf.search("mobility");
+
+// Get ICF Core Set for a diagnosis
+const coreSet = await client.icf.coreSet("E11.9");
+console.log(coreSet.conditionName); // "Diabetes Mellitus"
+console.log(coreSet.brief); // [{ code: "b530", title: "Weight maintenance functions", ... }]
+```
+
 ### PHI De-identification
 
 Strip protected health information from clinical notes before storage or analysis. HIPAA-compliant de-identification for names, dates, SSNs, phone numbers, emails, addresses, MRNs, and ages.
@@ -281,6 +306,10 @@ Full REST API documentation at [autoicdapi.com/docs](https://autoicdapi.com/docs
 | `autoicd.icd10.get(code)` | Get details for an ICD-10-CM code (incl. ICD-11 crosswalk) |
 | `autoicd.icd11.search(query, options?)` | Search ICD-11 codes by description |
 | `autoicd.icd11.get(code)` | Get details for an ICD-11 code (incl. ICD-10 crosswalk) |
+| `autoicd.icf.code(text, options?)` | Code clinical text to ICF functioning categories |
+| `autoicd.icf.lookup(code)` | Get details for an ICF code |
+| `autoicd.icf.search(query, options?)` | Search ICF codes by keyword |
+| `autoicd.icf.coreSet(icd10Code)` | Get ICF Core Set for an ICD-10 diagnosis |
 
 ---
 
@@ -303,6 +332,10 @@ import type {
   ICD11CodeDetailFull,
   ICD11CodeSearchResponse,
   CrosswalkMapping,
+  ICFCodingResponse,
+  ICFCodeDetail,
+  ICFCodeSearchResponse,
+  ICFCoreSetResponse,
 } from "autoicd";
 ```
 
