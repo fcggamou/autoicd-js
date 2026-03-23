@@ -230,6 +230,97 @@ export interface ICD11CodeSearchResponse {
   codes: ICD11CodeSearchResult[];
 }
 
+// ─── ICF ───
+
+export type ICFComponent = "b" | "s" | "d" | "e";
+
+export interface ICFCodeSummary {
+  /** ICF code (e.g., `"b280"`). */
+  code: string;
+  /** Code title. */
+  title: string;
+  /** ICF component: `"b"` (body functions), `"s"` (body structures), `"d"` (activities/participation), `"e"` (environmental factors). */
+  component: ICFComponent;
+  /** Number of direct child codes. */
+  child_count: number;
+}
+
+export interface ICFCodeDetail {
+  /** ICF code. */
+  code: string;
+  /** Code title. */
+  title: string;
+  /** Full definition text, or `null` if not available. */
+  definition: string | null;
+  /** ICF component. */
+  component: ICFComponent;
+  /** Chapter this code belongs to. */
+  chapter: string;
+  /** Parent code in the ICF hierarchy, or `null` for top-level. */
+  parent: ICFCodeSummary | null;
+  /** Direct child codes. */
+  children: ICFCodeSummary[];
+  /** Inclusion notes. */
+  inclusions: string[];
+  /** Exclusion notes. */
+  exclusions: string[];
+  /** Index terms for this code. */
+  index_terms: string[];
+}
+
+export interface ICFCodeResult {
+  /** Matched ICF code. */
+  code: string;
+  /** Code description. */
+  description: string;
+  /** ICF component. */
+  component: ICFComponent;
+  /** Cosine similarity score (0-1). */
+  similarity: number;
+  /** `"high"` if above high-confidence threshold, else `"moderate"`. */
+  confidence: "high" | "moderate";
+  /** The index term that produced this match. */
+  matched_term: string;
+}
+
+export interface ICFCodingEntity {
+  /** Entity text as extracted from the input. */
+  entity_text: string;
+  /** Ranked ICF code candidates. */
+  codes: ICFCodeResult[];
+}
+
+export interface ICFCodingResponse {
+  /** The input text that was processed. */
+  text: string;
+  /** Coding provider used. */
+  provider: string;
+  /** Total number of entities in results. */
+  entity_count: number;
+  /** Coding results per entity. */
+  results: ICFCodingEntity[];
+}
+
+export interface ICFSearchResponse {
+  /** The search query that was used. */
+  query: string;
+  /** Number of results returned. */
+  count: number;
+  /** Matching ICF codes. */
+  codes: ICFCodeSummary[];
+}
+
+export interface ICFCoreSetResult {
+  /** ICD-10 code used to look up the core set. */
+  icd10_code: string;
+  /** Condition name for this ICD-10 code. */
+  condition_name: string;
+  /** Brief ICF Core Set codes. */
+  brief: ICFCodeSummary[];
+  /** Comprehensive ICF Core Set codes. */
+  comprehensive: ICFCodeSummary[];
+}
+
 // ─── Error ───
 
 export interface ErrorBody {

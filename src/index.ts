@@ -20,6 +20,14 @@ export type {
   ICD11CodeDetailFull,
   ICD11CodeSearchResult,
   ICD11CodeSearchResponse,
+  ICFComponent,
+  ICFCodeSummary,
+  ICFCodeDetail,
+  ICFCodeResult,
+  ICFCodingEntity,
+  ICFCodingResponse,
+  ICFSearchResponse,
+  ICFCoreSetResult,
 } from "./types.js";
 
 export {

@@ -11,6 +11,10 @@ import type {
   ErrorBody,
   ICD11CodeSearchResponse,
   ICD11CodeDetailFull,
+  ICFCodingResponse,
+  ICFCodeDetail,
+  ICFSearchResponse,
+  ICFCoreSetResult,
 } from "./types.js";
 import {
   AutoICDError,
@@ -37,6 +41,9 @@ export class AutoICD {
   /** Sub-resource for ICD-11 code lookup. */
   readonly icd11: ICD11Codes;
 
+  /** Sub-resource for ICF code lookup and coding. */
+  readonly icf: ICFCodes;
+
   constructor(options: AutoICDOptions) {
     if (!options.apiKey) {
       throw new Error("apiKey is required");
@@ -47,6 +54,7 @@ export class AutoICD {
     this._fetch = options.fetch ?? globalThis.fetch;
     this.icd10 = new ICD10Codes(this);
     this.icd11 = new ICD11Codes(this);
+    this.icf = new ICFCodes(this);
   }
 
   // ─── Public Methods ───
@@ -232,6 +240,76 @@ class ICD11Codes {
    */
   async get(code: string): Promise<ICD11CodeDetailFull> {
     return this.client.get<ICD11CodeDetailFull>(`/api/v1/icd11/codes/${encodeURIComponent(code)}`);
+  }
+}
+
+// ─── ICF Codes Sub-resource ───
+
+class ICFCodes {
+  constructor(private readonly client: AutoICD) {}
+
+  /**
+   * Code clinical text to ICF codes.
+   *
+   * @example
+   * ```ts
+   * const result = await autoicd.icf.code("Patient has difficulty walking");
+   * for (const entity of result.results) {
+   *   console.log(entity.entity_text, entity.codes[0]?.code);
+   * }
+   * ```
+   */
+  async code(text: string, options?: { topK?: number }): Promise<ICFCodingResponse> {
+    return this.client.post<ICFCodingResponse>("/api/v1/icf/code", {
+      text,
+      top_k: options?.topK,
+    });
+  }
+
+  /**
+   * Get full details for a single ICF code, including definition,
+   * hierarchy (parent/children), inclusions, exclusions, and index terms.
+   *
+   * @example
+   * ```ts
+   * const detail = await autoicd.icf.lookup("b280");
+   * console.log(detail.title);
+   * console.log(detail.definition);
+   * console.log(detail.children.length);
+   * ```
+   */
+  async lookup(code: string): Promise<ICFCodeDetail> {
+    return this.client.get<ICFCodeDetail>(`/api/v1/icf/codes/${encodeURIComponent(code)}`);
+  }
+
+  /**
+   * Search ICF codes by description.
+   *
+   * @example
+   * ```ts
+   * const results = await autoicd.icf.search("pain");
+   * ```
+   */
+  async search(query: string, options?: SearchOptions): Promise<ICFSearchResponse> {
+    const params = new URLSearchParams({ q: query });
+    if (options?.limit !== undefined) params.set("limit", String(options.limit));
+    if (options?.offset !== undefined) params.set("offset", String(options.offset));
+    return this.client.get<ICFSearchResponse>(`/api/v1/icf/codes/search?${params}`);
+  }
+
+  /**
+   * Get the ICF Core Set for an ICD-10 diagnosis code.
+   *
+   * @example
+   * ```ts
+   * const coreSet = await autoicd.icf.coreSet("M54.5");
+   * console.log(coreSet.condition_name);
+   * console.log(coreSet.brief.length, "brief codes");
+   * console.log(coreSet.comprehensive.length, "comprehensive codes");
+   * ```
+   */
+  async coreSet(icd10Code: string): Promise<ICFCoreSetResult> {
+    return this.client.get<ICFCoreSetResult>(`/api/v1/icf/core-set/${encodeURIComponent(icd10Code)}`);
   }
 }
 
