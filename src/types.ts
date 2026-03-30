@@ -33,6 +33,14 @@ export interface CodeMatch {
   confidence: "high" | "moderate";
   /** The index term that produced this match. */
   matched_term: string;
+  /** Mapped ICD-11 codes. */
+  icd11_codes: string[];
+  /** SNOMED CT concept IDs. */
+  snomed_ids: string[];
+  /** UMLS CUIs. */
+  umls_cuis: string[];
+  /** Related ICF category codes. */
+  icf_categories: string[];
 }
 
 export interface CodingEntity {
@@ -115,6 +123,8 @@ export interface CodeDetailFull extends CodeDetail {
   block: string | null;
   /** ICD-11 crosswalk mappings for this ICD-10 code. */
   icd11_mappings: CrosswalkMapping[];
+  /** Related ICF categories from WHO Core Sets. */
+  icf_categories: ICFCrossReference[];
 }
 export interface CodeSearchResponse {
   /** The search query that was used. */
@@ -193,6 +203,16 @@ export interface CrosswalkMapping {
   system: string;
 }
 
+/** A related ICF category from WHO Core Sets. */
+export interface ICFCrossReference {
+  /** ICF code (e.g., "b5401"). */
+  code: string;
+  /** ICF code title. */
+  title: string;
+  /** Component letter: "b", "s", "d", or "e". */
+  component: string;
+}
+
 export interface ICD11CodeDetailFull extends ICD11CodeDetail {
   /** Synonyms grouped by source. */
   synonyms: Record<string, string[]>;
@@ -208,6 +228,8 @@ export interface ICD11CodeDetailFull extends ICD11CodeDetail {
   block: string | null;
   /** ICD-10 crosswalk mappings for this ICD-11 code. */
   icd10_mappings: CrosswalkMapping[];
+  /** Related ICF categories (via ICD-10 bridge). */
+  icf_categories: ICFCrossReference[];
 }
 
 export interface ICD11CodeSearchResult {
@@ -266,6 +288,12 @@ export interface ICFCodeDetail {
   exclusions: string[];
   /** Index terms for this code. */
   index_terms: string[];
+  /** Related ICD-10 codes from WHO Core Sets. */
+  icd10_mappings: CrosswalkMapping[];
+  /** Related ICD-11 codes (via ICD-10 bridge). */
+  icd11_mappings: CrosswalkMapping[];
+  /** Cross-reference IDs: "snomed" (concept IDs), "umls" (CUIs). */
+  cross_references: Record<string, string[]>;
 }
 
 export interface ICFCodeResult {
@@ -281,6 +309,14 @@ export interface ICFCodeResult {
   confidence: "high" | "moderate";
   /** The index term that produced this match. */
   matched_term: string;
+  /** Related ICD-10 codes. */
+  icd10_codes: string[];
+  /** Related ICD-11 codes. */
+  icd11_codes: string[];
+  /** SNOMED CT concept IDs. */
+  snomed_ids: string[];
+  /** UMLS CUIs. */
+  umls_cuis: string[];
 }
 
 export interface ICFCodingEntity {

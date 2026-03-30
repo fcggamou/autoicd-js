@@ -28,6 +28,7 @@ export type {
   ICFCodingResponse,
   ICFSearchResponse,
   ICFCoreSetResult,
+  ICFCrossReference,
 } from "./types.js";
 
 export {
