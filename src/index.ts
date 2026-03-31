@@ -29,6 +29,12 @@ export type {
   ICFSearchResponse,
   ICFCoreSetResult,
   ICFCrossReference,
+  LOINCCodeSummary,
+  LOINCCodeDetail,
+  LOINCSearchResponse,
+  LOINCCodeResult,
+  LOINCCodingEntity,
+  LOINCCodingResponse,
 } from "./types.js";
 
 export {

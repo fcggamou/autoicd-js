@@ -15,6 +15,8 @@ import type {
   ICFCodeDetail,
   ICFSearchResponse,
   ICFCoreSetResult,
+  LOINCCodeDetail,
+  LOINCSearchResponse,
 } from "./types.js";
 import {
   AutoICDError,
@@ -44,6 +46,9 @@ export class AutoICD {
   /** Sub-resource for ICF code lookup and coding. */
   readonly icf: ICFCodes;
 
+  /** Sub-resource for LOINC code lookup. */
+  readonly loinc: LOINCCodes;
+
   constructor(options: AutoICDOptions) {
     if (!options.apiKey) {
       throw new Error("apiKey is required");
@@ -55,6 +60,7 @@ export class AutoICD {
     this.icd10 = new ICD10Codes(this);
     this.icd11 = new ICD11Codes(this);
     this.icf = new ICFCodes(this);
+    this.loinc = new LOINCCodes(this);
   }
 
   // ─── Public Methods ───
@@ -310,6 +316,42 @@ class ICFCodes {
    */
   async coreSet(icd10Code: string): Promise<ICFCoreSetResult> {
     return this.client.get<ICFCoreSetResult>(`/api/v1/icf/core-set/${encodeURIComponent(icd10Code)}`);
+  }
+}
+
+// ─── LOINC Codes Sub-resource ───
+
+class LOINCCodes {
+  constructor(private readonly client: AutoICD) {}
+
+  /**
+   * Get full details for a single LOINC code, including 6-axis classification,
+   * definition, related names, and cross-references.
+   *
+   * @example
+   * ```ts
+   * const detail = await autoicd.loinc.lookup("2345-7");
+   * console.log(detail.long_common_name);
+   * console.log(detail.component, detail.system);
+   * ```
+   */
+  async lookup(code: string): Promise<LOINCCodeDetail> {
+    return this.client.get<LOINCCodeDetail>(`/api/v1/loinc/codes/${encodeURIComponent(code)}`);
+  }
+
+  /**
+   * Search LOINC codes by description.
+   *
+   * @example
+   * ```ts
+   * const results = await autoicd.loinc.search("glucose");
+   * ```
+   */
+  async search(query: string, options?: SearchOptions): Promise<LOINCSearchResponse> {
+    const params = new URLSearchParams({ q: query });
+    if (options?.limit !== undefined) params.set("limit", String(options.limit));
+    if (options?.offset !== undefined) params.set("offset", String(options.offset));
+    return this.client.get<LOINCSearchResponse>(`/api/v1/loinc/codes/search?${params}`);
   }
 }
 

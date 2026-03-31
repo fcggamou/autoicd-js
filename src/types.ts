@@ -357,6 +357,100 @@ export interface ICFCoreSetResult {
   comprehensive: ICFCodeSummary[];
 }
 
+// ─── LOINC ───
+
+export interface LOINCCodeSummary {
+  /** LOINC code (e.g., `"2345-7"`). */
+  code: string;
+  /** Primary description. */
+  long_common_name: string;
+  /** Abbreviated name. */
+  short_name: string;
+  /** LOINC class (e.g., `"CHEM"`). */
+  class_name: string;
+  /** 1=Lab, 2=Clinical, 3=Claims, 4=Surveys. */
+  class_type: number;
+  /** Order, Observation, or Both. */
+  order_obs: string;
+}
+
+export interface LOINCCodeDetail {
+  /** LOINC code. */
+  code: string;
+  /** Primary description. */
+  long_common_name: string;
+  /** Abbreviated name. */
+  short_name: string;
+  /** Display name. */
+  display_name: string;
+  /** Consumer-friendly name. */
+  consumer_name: string;
+  /** What is measured (e.g., `"Glucose"`). */
+  component: string;
+  /** Measurement property (e.g., `"MCnc"`). */
+  property: string;
+  /** Timing (e.g., `"Pt"` = point in time). */
+  time_aspect: string;
+  /** Specimen type (e.g., `"Ser/Plas"`). */
+  system: string;
+  /** Scale (e.g., `"Qn"` = quantitative). */
+  scale_type: string;
+  /** Method used. */
+  method_type: string;
+  /** LOINC class. */
+  class_name: string;
+  /** 1=Lab, 2=Clinical, 3=Claims, 4=Surveys. */
+  class_type: number;
+  /** Definition text, or `null`. */
+  definition: string | null;
+  /** Order, Observation, or Both. */
+  order_obs: string;
+  /** Synonym terms. */
+  related_names: string[];
+  /** Popularity rank. */
+  common_test_rank: number;
+  /** Order popularity rank. */
+  common_order_rank: number;
+  /** Cross-reference IDs: `"snomed"` (concept IDs), `"umls"` (CUIs). */
+  cross_references: Record<string, string[]>;
+}
+
+export interface LOINCSearchResponse {
+  /** The search query that was used. */
+  query: string;
+  /** Number of results returned. */
+  count: number;
+  /** Matching LOINC codes. */
+  codes: LOINCCodeSummary[];
+}
+
+/** Phase 2 placeholder. */
+export interface LOINCCodeResult {
+  code: string;
+  long_common_name: string;
+  component: string;
+  system: string;
+  similarity: number;
+  confidence: "high" | "moderate";
+  matched_term: string;
+  snomed_ids: string[];
+  umls_cuis: string[];
+}
+
+/** Phase 2 placeholder. */
+export interface LOINCCodingEntity {
+  entity_text: string;
+  codes: LOINCCodeResult[];
+}
+
+/** Phase 2 placeholder. */
+export interface LOINCCodingResponse {
+  text: string;
+  provider: string;
+  entity_count: number;
+  results: LOINCCodingEntity[];
+}
+
 // ─── Error ───
 
 export interface ErrorBody {
