@@ -424,7 +424,7 @@ export interface LOINCSearchResponse {
   codes: LOINCCodeSummary[];
 }
 
-/** Phase 2 placeholder. */
+/** A single LOINC code match from the coding endpoint. */
 export interface LOINCCodeResult {
   code: string;
   long_common_name: string;
@@ -437,13 +437,13 @@ export interface LOINCCodeResult {
   umls_cuis: string[];
 }
 
-/** Phase 2 placeholder. */
+/** LOINC coding results for a single extracted entity. */
 export interface LOINCCodingEntity {
   entity_text: string;
   codes: LOINCCodeResult[];
 }
 
-/** Phase 2 placeholder. */
+/** Full LOINC coding response. */
 export interface LOINCCodingResponse {
   text: string;
   provider: string;

@@ -17,6 +17,7 @@ import type {
   ICFCoreSetResult,
   LOINCCodeDetail,
   LOINCSearchResponse,
+  LOINCCodingResponse,
 } from "./types.js";
 import {
   AutoICDError,
@@ -46,7 +47,7 @@ export class AutoICD {
   /** Sub-resource for ICF code lookup and coding. */
   readonly icf: ICFCodes;
 
-  /** Sub-resource for LOINC code lookup. */
+  /** Sub-resource for LOINC code lookup and coding. */
   readonly loinc: LOINCCodes;
 
   constructor(options: AutoICDOptions) {
@@ -323,6 +324,27 @@ class ICFCodes {
 
 class LOINCCodes {
   constructor(private readonly client: AutoICD) {}
+
+  /**
+   * Code clinical text to LOINC codes.
+   *
+   * Extracts lab tests, imaging orders, and clinical observations from
+   * free text and matches to LOINC codes using NER + SapBERT embeddings.
+   *
+   * @example
+   * ```ts
+   * const result = await autoicd.loinc.code("Order CBC, glucose, and TSH");
+   * for (const entity of result.results) {
+   *   console.log(entity.entity_text, entity.codes[0]?.code);
+   * }
+   * ```
+   */
+  async code(text: string, options?: { topK?: number }): Promise<LOINCCodingResponse> {
+    return this.client.post<LOINCCodingResponse>("/api/v1/loinc/code", {
+      text,
+      top_k: options?.topK,
+    });
+  }
 
   /**
    * Get full details for a single LOINC code, including 6-axis classification,
