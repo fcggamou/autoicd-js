@@ -83,6 +83,11 @@ export class AutoICD {
       top_k: options?.topK,
       include_negated: options?.includeNegated,
       output_system: options?.outputSystem,
+      include_loinc: options?.includeLoinc,
+      include_icf: options?.includeIcf,
+      include_icd11: options?.includeIcd11,
+      include_snomed: options?.includeSnomed,
+      include_umls: options?.includeUmls,
     });
   }
 

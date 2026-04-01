@@ -117,6 +117,57 @@ describe("code()", () => {
     expect(body).toEqual({ text: "test", top_k: 3 });
     expect(body).not.toHaveProperty("include_negated");
   });
+
+  it("passes include flags to request body", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    await client.code("Lab text", {
+      includeLoinc: true,
+      includeIcf: true,
+      includeIcd11: true,
+      includeSnomed: true,
+      includeUmls: true,
+    });
+
+    const body = JSON.parse(fetch.mock.calls[0][1].body);
+    expect(body.include_loinc).toBe(true);
+    expect(body.include_icf).toBe(true);
+    expect(body.include_icd11).toBe(true);
+    expect(body.include_snomed).toBe(true);
+    expect(body.include_umls).toBe(true);
+  });
+
+  it("parses loinc_entities and icf_entities when present", async () => {
+    const responseWithLoinc = {
+      ...mockResponse,
+      loinc_entities: [
+        {
+          entity_text: "hemoglobin A1c",
+          codes: [
+            {
+              code: "4548-4",
+              long_common_name: "Hemoglobin A1c/Hemoglobin.total in Blood",
+              component: "Hemoglobin A1c",
+              system: "Bld",
+              similarity: 0.92,
+              confidence: "high",
+              matched_term: "hemoglobin a1c",
+              snomed_ids: [],
+              umls_cuis: [],
+            },
+          ],
+        },
+      ],
+    };
+    const fetch = mockFetch(200, responseWithLoinc);
+    const client = createClient(fetch);
+
+    const result = await client.code("Order hemoglobin A1c", { includeLoinc: true });
+    expect(result.loinc_entities).toBeDefined();
+    expect(result.loinc_entities![0].entity_text).toBe("hemoglobin A1c");
+    expect(result.loinc_entities![0].codes[0].code).toBe("4548-4");
+  });
 });
 
 describe("icd10.search()", () => {

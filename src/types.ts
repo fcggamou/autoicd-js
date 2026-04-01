@@ -20,6 +20,16 @@ export interface CodeOptions {
   includeNegated?: boolean;
   /** Output coding system: `"icd10"` (default) or `"icd11"`. */
   outputSystem?: "icd10" | "icd11";
+  /** Include LOINC lab code results in the response. Defaults to false. */
+  includeLoinc?: boolean;
+  /** Include ICF functioning code results in the response. Defaults to false. */
+  includeIcf?: boolean;
+  /** Include ICD-11 crosswalk codes per ICD-10 match. Defaults to false. */
+  includeIcd11?: boolean;
+  /** Include SNOMED CT concept IDs per ICD-10 match. Defaults to false. */
+  includeSnomed?: boolean;
+  /** Include UMLS CUIs per ICD-10 match. Defaults to false. */
+  includeUmls?: boolean;
 }
 
 export interface CodeMatch {
@@ -77,6 +87,10 @@ export interface CodingResponse {
   entity_count: number;
   /** Coding results per entity, sorted by position in text. */
   entities: CodingEntity[];
+  /** LOINC lab code results. Only present when `includeLoinc` is true. */
+  loinc_entities?: LOINCCodingEntity[];
+  /** ICF functioning code results. Only present when `includeIcf` is true. */
+  icf_entities?: ICFCodingEntity[];
 }
 
 // ─── Code Search ───
