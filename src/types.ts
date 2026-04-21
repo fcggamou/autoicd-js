@@ -462,6 +462,180 @@ export interface LOINCCodingResponse {
   results: LOINCCodingEntity[];
 }
 
+// ─── Chart Audit ───
+
+/**
+ * Audit capability selector. Defaults to all five when omitted.
+ *
+ * - `hcc`: missed HCC codes with RAF-weighted revenue estimates (v22/v28)
+ * - `radv`: submitted codes that cannot be defended against RADV clawback
+ * - `specificity`: suggestions to upgrade unspecified codes to more precise children
+ * - `denial`: documentation-quality flags that correlate with claim denials
+ * - `problem_list`: reconciled active-conditions list across the documentation
+ */
+export type AuditCapability =
+  | "hcc"
+  | "radv"
+  | "specificity"
+  | "denial"
+  | "problem_list";
+
+export interface AuditDocument {
+  id: string;
+  text: string;
+  type?:
+    | "progress_note"
+    | "discharge_summary"
+    | "h_and_p"
+    | "operative_note"
+    | "consult"
+    | "other";
+  date?: string;
+}
+
+export interface AuditCode {
+  code: string;
+  kind: "icd10" | "icd11" | "cpt" | "hcpcs";
+}
+
+export interface AuditContext {
+  patient?: {
+    age?: number;
+    sex?: "male" | "female";
+    coverage?:
+      | "medicare_advantage"
+      | "fee_for_service"
+      | "medicaid"
+      | "commercial"
+      | "aco";
+  };
+  claim?: {
+    date_of_service?: string;
+    place_of_service?: string;
+    provider_type?: string;
+  };
+  payer?: {
+    id?: string;
+    type?: string;
+  };
+  rates?: {
+    cms_base_rate?: number;
+    hospital_base_rate?: number;
+    denial_rework_cost?: number;
+  };
+  /** Defaults to `"both"`. `"v24"` is ESRD-specific and NOT accepted; PY2026 MA payment uses v22 + v28. */
+  hcc_model?: "v22" | "v28" | "both";
+}
+
+export interface AuditRequest {
+  text?: string;
+  documents?: AuditDocument[];
+  codes?: AuditCode[];
+  capabilities?: AuditCapability[];
+  context?: AuditContext;
+}
+
+export interface EvidenceSpan {
+  document_id: string;
+  start: number;
+  end: number;
+  quote: string;
+}
+
+export interface ConfirmedCode {
+  code: string;
+  kind: string;
+  description: string;
+  evidence: EvidenceSpan[];
+  confidence: number;
+  hcc_category?: string;
+  raf_weight?: number;
+}
+
+export interface MissedCode {
+  code: string;
+  kind: string;
+  description: string;
+  evidence: EvidenceSpan[];
+  confidence: number;
+  hcc_category?: string;
+  raf_weight?: number;
+  estimated_revenue?: number;
+  hcc_model?: "v22" | "v28";
+}
+
+export interface UnsupportedCode {
+  code: string;
+  kind: string;
+  description: string;
+  reason: string;
+  what_would_support_it: string;
+  radv_risk: "high" | "moderate" | "low";
+  estimated_exposure?: number;
+}
+
+export interface SpecificityUpgrade {
+  from_code: string;
+  to_code: string;
+  from_description: string;
+  to_description: string;
+  evidence: EvidenceSpan[];
+  mcc_cc_change?: {
+    from: "none" | "cc" | "mcc";
+    to: "none" | "cc" | "mcc";
+  };
+  drg_impact?: number;
+}
+
+export interface DenialRisk {
+  code: string;
+  kind: string;
+  description: string;
+  risk: "high" | "moderate" | "low";
+  probability: number;
+  reasons: string[];
+}
+
+export interface ProblemListEntry {
+  condition: string;
+  icd10_code: string;
+  status: "active" | "resolved" | "historical";
+  first_seen: { document_id: string; date?: string };
+  last_seen: { document_id: string; date?: string };
+  evidence: EvidenceSpan[];
+}
+
+export interface AuditTotals {
+  missed_raf: number;
+  estimated_revenue_recovery: number;
+  radv_exposure: number;
+  drg_upside: number;
+  codes_confirmed: number;
+  codes_missed: number;
+  codes_unsupported: number;
+  upgrades_available: number;
+}
+
+export interface RatesUsed {
+  cms_base_rate: number;
+  hospital_base_rate: number;
+  source: "cms_national_2026" | "customer_provided";
+  hcc_model: "v22" | "v28" | "both";
+}
+
+export interface AuditResponse {
+  capabilities_run: AuditCapability[];
+  confirmed: ConfirmedCode[];
+  missed: MissedCode[];
+  unsupported: UnsupportedCode[];
+  specificity_upgrades: SpecificityUpgrade[];
+  denial_risk: DenialRisk[];
+  problem_list?: ProblemListEntry[];
+  totals: AuditTotals;
+  provider: string;
+  rates_used: RatesUsed;
+}
+
 // ─── Error ───
 
 export interface ErrorBody {
