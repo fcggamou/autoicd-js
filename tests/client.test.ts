@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AutoICD, AuthenticationError, RateLimitError, NotFoundError, AutoICDError } from "../src/index.js";
-import type { CodingResponse, CodeSearchResponse, AnonymizeResponse, CodeDetail, ICD11CodeSearchResponse, ICD11CodeDetailFull } from "../src/index.js";
+import type { CodingResponse, CodeSearchResponse, AnonymizeResponse, CodeDetail, ICD11CodeSearchResponse, ICD11CodeDetailFull, AuditResponse } from "../src/index.js";
 
 // ─── Mock Helpers ───
 
@@ -251,6 +251,113 @@ describe("anonymize()", () => {
     );
     expect(result.pii_count).toBe(1);
     expect(result.anonymized_text).toBe("[NAME] has COPD");
+  });
+});
+
+describe("audit()", () => {
+  const mockResponse: AuditResponse = {
+    capabilities_run: ["hcc"],
+    confirmed: [
+      {
+        code: "E11.9",
+        kind: "icd10",
+        description: "Type 2 diabetes without complications",
+        evidence: [{ document_id: "doc_0", start: 8, end: 23, quote: "type 2 diabetes" }],
+        confidence: 0.97,
+      },
+    ],
+    missed: [
+      {
+        code: "I50.9",
+        kind: "icd10",
+        description: "Heart failure, unspecified",
+        evidence: [{ document_id: "doc_0", start: 28, end: 41, quote: "heart failure" }],
+        confidence: 0.93,
+        hcc_category: "HCC85",
+        raf_weight: 0.323,
+        estimated_revenue: 4264,
+        hcc_model: "v22",
+      },
+    ],
+    unsupported: [],
+    specificity_upgrades: [],
+    denial_risk: [],
+    totals: {
+      missed_raf: 0.323,
+      estimated_revenue_recovery: 4264,
+      radv_exposure: 0,
+      drg_upside: 0,
+      codes_confirmed: 1,
+      codes_missed: 1,
+      codes_unsupported: 0,
+      upgrades_available: 0,
+    },
+    provider: "autoicd-audit-v0.2",
+    rates_used: {
+      cms_base_rate: 13200,
+      hospital_base_rate: 6500,
+      source: "cms_national_2026",
+      hcc_model: "both",
+    },
+  };
+
+  it("sends audit request and surfaces findings", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    const result = await client.audit({
+      text: "pt has type 2 diabetes and heart failure",
+      codes: [{ code: "E11.9", kind: "icd10" }],
+      capabilities: ["hcc"],
+    });
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://test.autoicdapi.com/api/v1/audit",
+      expect.objectContaining({ method: "POST" }),
+    );
+    const call = fetch.mock.calls[0]?.[1] as { body: string };
+    const parsed = JSON.parse(call.body);
+    expect(parsed.capabilities).toEqual(["hcc"]);
+    expect(parsed.codes[0].code).toBe("E11.9");
+
+    expect(result.missed).toHaveLength(1);
+    expect(result.missed[0]?.hcc_category).toBe("HCC85");
+    expect(result.missed[0]?.hcc_model).toBe("v22");
+    expect(result.totals.estimated_revenue_recovery).toBe(4264);
+  });
+
+  it("passes context through to the request body", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    await client.audit({
+      text: "x",
+      codes: [{ code: "E11.9", kind: "icd10" }],
+      context: {
+        patient: { coverage: "medicare_advantage" },
+        hcc_model: "v28",
+      },
+    });
+
+    const call = fetch.mock.calls[0]?.[1] as { body: string };
+    const parsed = JSON.parse(call.body);
+    expect(parsed.context.hcc_model).toBe("v28");
+    expect(parsed.context.patient.coverage).toBe("medicare_advantage");
+  });
+
+  it("updates lastRateLimit from audit response headers", async () => {
+    const fetch = mockFetch(200, mockResponse, {
+      "X-RateLimit-Limit": "500",
+      "X-RateLimit-Remaining": "123",
+      "X-RateLimit-Reset": "2026-05-01T00:00:00Z",
+    });
+    const client = createClient(fetch);
+    await client.audit({
+      text: "x",
+      codes: [{ code: "E11.9", kind: "icd10" }],
+    });
+    expect(client.lastRateLimit?.limit).toBe(500);
+    expect(client.lastRateLimit?.remaining).toBe(123);
   });
 });
 
