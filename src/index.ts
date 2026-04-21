@@ -51,6 +51,11 @@ export type {
   AuditTotals,
   RatesUsed,
   UpgradeHint,
+  InteropSystem,
+  TranslateRequest,
+  TranslateResponse,
+  TranslateMapping,
+  TranslateSource,
 } from "./types.js";
 
 export {

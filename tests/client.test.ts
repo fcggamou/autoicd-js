@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AutoICD, AuthenticationError, RateLimitError, NotFoundError, AutoICDError } from "../src/index.js";
-import type { CodingResponse, CodeSearchResponse, AnonymizeResponse, CodeDetail, ICD11CodeSearchResponse, ICD11CodeDetailFull, AuditResponse } from "../src/index.js";
+import type { CodingResponse, CodeSearchResponse, AnonymizeResponse, CodeDetail, ICD11CodeSearchResponse, ICD11CodeDetailFull, AuditResponse, TranslateResponse } from "../src/index.js";
 
 // ─── Mock Helpers ───
 
@@ -358,6 +358,75 @@ describe("audit()", () => {
     });
     expect(client.lastRateLimit?.limit).toBe(500);
     expect(client.lastRateLimit?.remaining).toBe(123);
+  });
+});
+
+describe("translate()", () => {
+  const mockResponse: TranslateResponse = {
+    from: {
+      code: "E11.9",
+      system: "icd10",
+      description: "Type 2 diabetes mellitus without complications",
+    },
+    mappings: {
+      icd11: [{ code: "5A11", description: "Type 2 diabetes mellitus", mapping_type: "equivalent" }],
+      snomed: [{ code: "44054006" }, { code: "73211009" }],
+      umls: [{ code: "C0011860" }],
+      icf: [
+        { code: "b540", description: "General metabolic functions", component: "b" },
+      ],
+    },
+    unsupported_targets: [],
+    provider: "autoicd-translate-v0.1",
+  };
+
+  it("sends translate request and returns mapping buckets", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    const result = await client.translate({
+      from: { code: "E11.9", system: "icd10" },
+    });
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://test.autoicdapi.com/api/v1/translate",
+      expect.objectContaining({ method: "POST" }),
+    );
+    const call = fetch.mock.calls[0]?.[1] as { body: string };
+    const parsed = JSON.parse(call.body);
+    expect(parsed.from.code).toBe("E11.9");
+    expect(parsed.from.system).toBe("icd10");
+
+    expect(result.mappings.icd11).toHaveLength(1);
+    expect(result.mappings.snomed).toHaveLength(2);
+    expect(result.mappings.icf?.[0]?.component).toBe("b");
+    expect(result.provider).toBe("autoicd-translate-v0.1");
+  });
+
+  it("passes through narrowed to[] targets", async () => {
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+    await client.translate({
+      from: { code: "E11.9", system: "icd10" },
+      to: ["icd11", "snomed"],
+    });
+    const call = fetch.mock.calls[0]?.[1] as { body: string };
+    const parsed = JSON.parse(call.body);
+    expect(parsed.to).toEqual(["icd11", "snomed"]);
+  });
+
+  it("reports unsupported_targets when the server rejects them", async () => {
+    const fetch = mockFetch(200, {
+      ...mockResponse,
+      mappings: { icd11: mockResponse.mappings.icd11 },
+      unsupported_targets: ["snomed"],
+    });
+    const client = createClient(fetch);
+    const result = await client.translate({
+      from: { code: "E11.9", system: "icd10" },
+      to: ["icd11", "snomed"],
+    });
+    expect(result.unsupported_targets).toContain("snomed");
   });
 });
 

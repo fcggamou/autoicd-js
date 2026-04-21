@@ -647,6 +647,45 @@ export interface AuditResponse {
   upgrade_hint?: UpgradeHint;
 }
 
+// ─── Cross-standard Translate ───
+
+/**
+ * Healthcare coding systems supported by `/v1/translate`.
+ * Current reachable mappings (forward):
+ * - `icd10` → `icd11` / `snomed` / `umls` / `icf`
+ * - `icd11` → `icd10`
+ * - `icf`   → `icd10`
+ */
+export type InteropSystem = "icd10" | "icd11" | "snomed" | "umls" | "icf";
+
+export interface TranslateRequest {
+  from: {
+    code: string;
+    system: InteropSystem;
+  };
+  to?: InteropSystem[];
+}
+
+export interface TranslateMapping {
+  code: string;
+  description?: string;
+  mapping_type?: string;
+  component?: string;
+}
+
+export interface TranslateSource {
+  code: string;
+  system: InteropSystem;
+  description?: string;
+}
+
+export interface TranslateResponse {
+  from: TranslateSource;
+  mappings: Partial<Record<InteropSystem, TranslateMapping[]>>;
+  unsupported_targets: InteropSystem[];
+  provider: string;
+}
+
 // ─── Error ───
 
 export interface ErrorBody {

@@ -20,6 +20,8 @@ import type {
   LOINCCodingResponse,
   AuditRequest,
   AuditResponse,
+  TranslateRequest,
+  TranslateResponse,
 } from "./types.js";
 import {
   AutoICDError,
@@ -126,6 +128,27 @@ export class AutoICD {
    */
   async audit(request: AuditRequest): Promise<AuditResponse> {
     return this.post<AuditResponse>("/api/v1/audit", request as unknown as Record<string, unknown>);
+  }
+
+  /**
+   * Translate a code between healthcare coding systems. Maps a source code
+   * (ICD-10, ICD-11, SNOMED, UMLS, ICF) to equivalents in requested target
+   * systems. Omit `to` to get every system reachable from the source.
+   *
+   * @example
+   * ```ts
+   * const result = await autoicd.translate({
+   *   from: { code: "E11.9", system: "icd10" },
+   * });
+   * console.log(result.mappings.icd11);
+   * console.log(result.mappings.snomed);
+   * ```
+   */
+  async translate(request: TranslateRequest): Promise<TranslateResponse> {
+    return this.post<TranslateResponse>(
+      "/api/v1/translate",
+      request as unknown as Record<string, unknown>,
+    );
   }
 
   // ─── Internal HTTP ───
