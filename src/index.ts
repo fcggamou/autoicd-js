@@ -35,6 +35,21 @@ export type {
   LOINCCodeResult,
   LOINCCodingEntity,
   LOINCCodingResponse,
+  AuditCapability,
+  AuditCode,
+  AuditDocument,
+  AuditContext,
+  AuditRequest,
+  AuditResponse,
+  EvidenceSpan,
+  ConfirmedCode,
+  MissedCode,
+  UnsupportedCode,
+  SpecificityUpgrade,
+  DenialRisk,
+  ProblemListEntry,
+  AuditTotals,
+  RatesUsed,
 } from "./types.js";
 
 export {

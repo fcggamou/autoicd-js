@@ -18,6 +18,8 @@ import type {
   LOINCCodeDetail,
   LOINCSearchResponse,
   LOINCCodingResponse,
+  AuditRequest,
+  AuditResponse,
 } from "./types.js";
 import {
   AutoICDError,
@@ -102,6 +104,28 @@ export class AutoICD {
    */
   async anonymize(text: string): Promise<AnonymizeResponse> {
     return this.post<AnonymizeResponse>("/api/v1/anonymize", { text });
+  }
+
+  /**
+   * Audit a chart for coding gaps, RADV risk, specificity, denial flags, and
+   * a reconciled problem list. Every finding carries extractive evidence spans.
+   *
+   * @example
+   * ```ts
+   * const audit = await autoicd.audit({
+   *   text: "68yo M, type 2 diabetes, chronic systolic heart failure on furosemide.",
+   *   codes: [{ code: "E11.9", kind: "icd10" }],
+   *   capabilities: ["hcc", "radv", "specificity", "denial", "problem_list"],
+   *   context: { patient: { coverage: "medicare_advantage" } },
+   * });
+   * console.log(audit.totals.estimated_revenue_recovery);
+   * for (const m of audit.missed) {
+   *   console.log(`${m.code} ${m.hcc_category} $${m.estimated_revenue}`);
+   * }
+   * ```
+   */
+  async audit(request: AuditRequest): Promise<AuditResponse> {
+    return this.post<AuditResponse>("/api/v1/audit", request as unknown as Record<string, unknown>);
   }
 
   // ─── Internal HTTP ───
