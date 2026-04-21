@@ -50,6 +50,7 @@ export type {
   ProblemListEntry,
   AuditTotals,
   RatesUsed,
+  UpgradeHint,
 } from "./types.js";
 
 export {

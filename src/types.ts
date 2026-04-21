@@ -623,6 +623,16 @@ export interface RatesUsed {
   hcc_model: "v22" | "v28" | "both";
 }
 
+/**
+ * Present on the response when the server dropped one or more requested
+ * capabilities because the caller's plan did not include them.
+ */
+export interface UpgradeHint {
+  denied_capabilities: AuditCapability[];
+  required_plan: string;
+  message: string;
+}
+
 export interface AuditResponse {
   capabilities_run: AuditCapability[];
   confirmed: ConfirmedCode[];
@@ -634,6 +644,7 @@ export interface AuditResponse {
   totals: AuditTotals;
   provider: string;
   rates_used: RatesUsed;
+  upgrade_hint?: UpgradeHint;
 }
 
 // ─── Error ───
