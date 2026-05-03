@@ -337,17 +337,6 @@ export interface ICFCodingEntity {
   codes: ICFCodeResult[];
 }
 
-export interface ICFCodingResponse {
-  /** The input text that was processed. */
-  text: string;
-  /** Coding provider used. */
-  provider: string;
-  /** Total number of entities in results. */
-  entity_count: number;
-  /** Coding results per entity. */
-  results: ICFCodingEntity[];
-}
-
 export interface ICFSearchResponse {
   /** The search query that was used. */
   query: string;

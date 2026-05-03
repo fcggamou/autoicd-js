@@ -11,7 +11,6 @@ import type {
   ErrorBody,
   ICD11CodeSearchResponse,
   ICD11CodeDetailFull,
-  ICFCodingResponse,
   ICFCodeDetail,
   ICFSearchResponse,
   ICFCoreSetResult,
@@ -305,24 +304,6 @@ class ICD11Codes {
 
 class ICFCodes {
   constructor(private readonly client: AutoICD) {}
-
-  /**
-   * Code clinical text to ICF codes.
-   *
-   * @example
-   * ```ts
-   * const result = await autoicd.icf.code("Patient has difficulty walking");
-   * for (const entity of result.results) {
-   *   console.log(entity.entity_text, entity.codes[0]?.code);
-   * }
-   * ```
-   */
-  async code(text: string, options?: { topK?: number }): Promise<ICFCodingResponse> {
-    return this.client.post<ICFCodingResponse>("/api/v1/icf/code", {
-      text,
-      top_k: options?.topK,
-    });
-  }
 
   /**
    * Get full details for a single ICF code, including definition,

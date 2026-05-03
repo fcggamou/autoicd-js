@@ -253,13 +253,18 @@ for (const mapping of detail.icd11_mappings ?? []) {
 
 ### ICF Functioning Codes
 
-Code clinical text to WHO ICF categories, look up codes, search, and access ICF Core Sets for 12+ conditions.
+Look up WHO ICF categories, search the catalog, and access ICF Core Sets for 12+ conditions. To extract ICF functioning categories from clinical text, pass `includeIcf: true` to `autoicd.code()`; the response includes `icf_entities` alongside the ICD-10 results.
 
 ```typescript
-// Code clinical text to ICF categories
-const icf = await client.icf.code("Patient with stroke and hemiplegia");
-console.log(icf.results[0].codes);
-// [{ code: "b730", description: "Muscle power functions", component: "b", ... }]
+// Extract ICF functioning categories during ICD-10 coding
+const result = await client.code(
+  "Patient with stroke and hemiplegia",
+  { includeIcf: true }
+);
+for (const entity of result.icf_entities ?? []) {
+  console.log(entity.entity_text, entity.codes[0]?.code);
+  // "hemiplegia" "b730"
+}
 
 // Look up an ICF code
 const code = await client.icf.lookup("d450");
@@ -271,7 +276,7 @@ const results = await client.icf.search("mobility");
 
 // Get ICF Core Set for a diagnosis
 const coreSet = await client.icf.coreSet("E11.9");
-console.log(coreSet.conditionName); // "Diabetes Mellitus"
+console.log(coreSet.condition_name); // "Diabetes Mellitus"
 console.log(coreSet.brief); // [{ code: "b530", title: "Weight maintenance functions", ... }]
 ```
 
@@ -389,7 +394,6 @@ Full REST API documentation at [autoicdapi.com/docs](https://autoicdapi.com/docs
 | `autoicd.icd10.get(code)` | Get details for an ICD-10-CM code (incl. ICD-11 crosswalk) |
 | `autoicd.icd11.search(query, options?)` | Search ICD-11 codes by description |
 | `autoicd.icd11.get(code)` | Get details for an ICD-11 code (incl. ICD-10 crosswalk) |
-| `autoicd.icf.code(text, options?)` | Code clinical text to ICF functioning categories |
 | `autoicd.icf.lookup(code)` | Get details for an ICF code |
 | `autoicd.icf.search(query, options?)` | Search ICF codes by keyword |
 | `autoicd.icf.coreSet(icd10Code)` | Get ICF Core Set for an ICD-10 diagnosis |
@@ -415,7 +419,6 @@ import type {
   ICD11CodeDetailFull,
   ICD11CodeSearchResponse,
   CrosswalkMapping,
-  ICFCodingResponse,
   ICFCodeDetail,
   ICFCodeSearchResponse,
   ICFCoreSetResponse,
