@@ -55,6 +55,8 @@ export type {
   TranslateResponse,
   TranslateMapping,
   TranslateSource,
+  ReferenceSystem,
+  ReferenceCodeRecord,
 } from "./types.js";
 
 export {

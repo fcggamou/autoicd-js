@@ -226,6 +226,42 @@ describe("icd10.get()", () => {
   });
 });
 
+describe("reference.lookup()", () => {
+  it("hits /api/v1/reference/{system}/{code} and returns the discriminated record", async () => {
+    const mockResponse = {
+      system: "icd-10-cm",
+      code: "I50.23",
+      record: {
+        code: "I50.23",
+        short_description: "Acute on chronic systolic CHF",
+        long_description: "Acute on chronic systolic (congestive) heart failure",
+        is_billable: true,
+        synonyms: {},
+        cross_references: {},
+        parent: null,
+        children: [],
+        chapter: null,
+        block: null,
+        icd11_mappings: [],
+        icf_categories: [],
+      },
+    };
+    const fetch = mockFetch(200, mockResponse);
+    const client = createClient(fetch);
+
+    const result = await client.reference.lookup("icd-10-cm", "I50.23");
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://test.autoicdapi.com/api/v1/reference/icd-10-cm/I50.23",
+      expect.anything()
+    );
+    expect(result.system).toBe("icd-10-cm");
+    if (result.system === "icd-10-cm") {
+      expect(result.record.is_billable).toBe(true);
+    }
+  });
+});
+
 describe("anonymize()", () => {
   const mockResponse: AnonymizeResponse = {
     original_text: "John Smith has COPD",

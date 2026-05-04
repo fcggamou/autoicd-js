@@ -675,6 +675,21 @@ export interface TranslateResponse {
   provider: string;
 }
 
+// ─── Reference Lookup ───
+
+/** Coding system slugs accepted by `client.reference.lookup`. */
+export type ReferenceSystem = "icd-10-cm" | "icd-11" | "icf" | "loinc";
+
+/**
+ * Discriminated record returned by `GET /v1/reference/{system}/{code}`.
+ * `system` tags the variant; `record` carries the system-specific shape.
+ */
+export type ReferenceCodeRecord =
+  | { system: "icd-10-cm"; code: string; record: CodeDetailFull }
+  | { system: "icd-11"; code: string; record: ICD11CodeDetailFull }
+  | { system: "icf"; code: string; record: ICFCodeDetail }
+  | { system: "loinc"; code: string; record: LOINCCodeDetail };
+
 // ─── Error ───
 
 export interface ErrorBody {

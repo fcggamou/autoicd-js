@@ -21,6 +21,8 @@ import type {
   AuditResponse,
   TranslateRequest,
   TranslateResponse,
+  ReferenceSystem,
+  ReferenceCodeRecord,
 } from "./types.js";
 import {
   AutoICDError,
@@ -53,6 +55,9 @@ export class AutoICD {
   /** Sub-resource for LOINC code lookup and coding. */
   readonly loinc: LOINCCodes;
 
+  /** Unified cross-system reference lookup. */
+  readonly reference: ReferenceCodes;
+
   constructor(options: AutoICDOptions) {
     if (!options.apiKey) {
       throw new Error("apiKey is required");
@@ -65,6 +70,7 @@ export class AutoICD {
     this.icd11 = new ICD11Codes(this);
     this.icf = new ICFCodes(this);
     this.loinc = new LOINCCodes(this);
+    this.reference = new ReferenceCodes(this);
   }
 
   // ─── Public Methods ───
@@ -406,6 +412,33 @@ class LOINCCodes {
     if (options?.limit !== undefined) params.set("limit", String(options.limit));
     if (options?.offset !== undefined) params.set("offset", String(options.offset));
     return this.client.get<LOINCSearchResponse>(`/api/v1/loinc/codes/search?${params}`);
+  }
+}
+
+// ─── Reference Sub-resource ───
+
+class ReferenceCodes {
+  constructor(private readonly client: AutoICD) {}
+
+  /**
+   * Look up canonical reference data for a code in any supported coding system.
+   *
+   * Supersedes the per-system getters (`icd10.get`, `icd11.get`, `icf.lookup`,
+   * `loinc.lookup`), which remain available but emit `Deprecation` and `Sunset`
+   * response headers.
+   *
+   * @example
+   * ```ts
+   * const result = await autoicd.reference.lookup("icd-10-cm", "I50.23");
+   * if (result.system === "icd-10-cm") {
+   *   console.log(result.record.long_description);
+   * }
+   * ```
+   */
+  async lookup(system: ReferenceSystem, code: string): Promise<ReferenceCodeRecord> {
+    return this.client.get<ReferenceCodeRecord>(
+      `/api/v1/reference/${encodeURIComponent(system)}/${encodeURIComponent(code)}`
+    );
   }
 }
 
