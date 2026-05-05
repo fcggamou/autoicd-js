@@ -675,10 +675,75 @@ export interface TranslateResponse {
   provider: string;
 }
 
+// ─── SNOMED CT / UMLS / RxNorm Reference Records ───
+
+/** Canonical SNOMED CT concept record. */
+export interface SnomedCodeDetail {
+  /** SNOMED CT concept ID (SCTID). */
+  concept_id: string;
+  /** Fully Specified Name. */
+  fsn: string;
+  /** Preferred Term. */
+  preferred_term: string;
+  /** Semantic tag from the FSN (e.g. `"disorder"`, `"finding"`). */
+  semantic_tag: string;
+  /** Whether the concept is active in the latest release. */
+  active: boolean;
+  /** Synonym terms. */
+  synonyms: string[];
+  /** Cross-reference IDs grouped by system: `"icd10"`, `"icd11"`, `"loinc"`, `"umls"`, `"rxnorm"`. */
+  cross_references: Record<string, string[]>;
+}
+
+/** Single source-vocabulary atom underlying a UMLS concept. */
+export interface UmlsAtomDetail {
+  source_vocabulary: string;
+  source_code: string;
+  term_type: string;
+  description: string;
+}
+
+/** Canonical UMLS Metathesaurus concept record. */
+export interface UmlsCodeDetail {
+  /** UMLS Concept Unique Identifier. */
+  cui: string;
+  /** Preferred concept name. */
+  preferred_name: string;
+  /** Semantic types (TUIs / labels). */
+  semantic_types: string[];
+  /** Source-vocabulary atoms behind the concept. */
+  atoms: UmlsAtomDetail[];
+  /** Cross-reference IDs grouped by system: `"icd10"`, `"snomed"`, `"loinc"`, `"rxnorm"`. */
+  cross_references: Record<string, string[]>;
+}
+
+/** Canonical RxNorm concept record. */
+export interface RxnormCodeDetail {
+  /** RxNorm concept identifier. */
+  rxcui: string;
+  /** Concept name. */
+  name: string;
+  /** Term type (e.g. `"IN"`, `"BN"`, `"SCD"`). */
+  tty: string;
+  /** Language code. */
+  language: string;
+  /** Synonym terms. */
+  synonyms: string[];
+  /** Cross-reference IDs grouped by system: `"umls"`, `"snomed"`, `"icd10"`, `"loinc"`. */
+  cross_references: Record<string, string[]>;
+}
+
 // ─── Reference Lookup ───
 
-/** Coding system slugs accepted by `client.reference.lookup`. */
-export type ReferenceSystem = "icd-10-cm" | "icd-11" | "icf" | "loinc";
+/** Coding system slugs accepted by `client.reference.lookup` and `client.reference.search`. */
+export type ReferenceSystem =
+  | "icd-10-cm"
+  | "icd-11"
+  | "icf"
+  | "loinc"
+  | "snomed-ct"
+  | "umls"
+  | "rxnorm";
 
 /**
  * Discriminated record returned by `GET /v1/reference/{system}/{code}`.
@@ -688,7 +753,31 @@ export type ReferenceCodeRecord =
   | { system: "icd-10-cm"; code: string; record: CodeDetailFull }
   | { system: "icd-11"; code: string; record: ICD11CodeDetailFull }
   | { system: "icf"; code: string; record: ICFCodeDetail }
-  | { system: "loinc"; code: string; record: LOINCCodeDetail };
+  | { system: "loinc"; code: string; record: LOINCCodeDetail }
+  | { system: "snomed-ct"; code: string; record: SnomedCodeDetail }
+  | { system: "umls"; code: string; record: UmlsCodeDetail }
+  | { system: "rxnorm"; code: string; record: RxnormCodeDetail };
+
+/** Coding system slugs accepted by `client.reference.search`. */
+export type SearchableReferenceSystem = "snomed-ct" | "umls" | "rxnorm";
+
+/** A single search hit returned by `GET /v1/reference/{system}/search`. */
+export interface ReferenceSearchHit {
+  /** Code in the searched system. */
+  code: string;
+  /** Display label (preferred term, name, etc.). */
+  label: string;
+  /** Optional system-specific metadata (semantic tag, term type). */
+  meta?: string;
+}
+
+/** Response shape for `GET /v1/reference/{system}/search`. */
+export interface ReferenceSearchResponse {
+  query: string;
+  system: SearchableReferenceSystem;
+  count: number;
+  results: ReferenceSearchHit[];
+}
 
 // ─── Error ───
 

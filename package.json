@@ -1,7 +1,7 @@
 {
   "name": "autoicd-js",
-  "version": "0.10.0",
-  "description": "AI medical coding SDK — convert clinical text to ICD-10-CM and ICD-11 diagnosis codes with AI-powered NLP. Automated ICD-10 coding, PHI de-identification, code search, and ICD-10/ICD-11 crosswalk for EHR, billing, and health-tech apps.",
+  "version": "0.11.0",
+  "description": "AI medical coding SDK — convert clinical text to ICD-10-CM and ICD-11 diagnosis codes with AI-powered NLP. Unified reference lookup for ICD-10, ICD-11, ICF, LOINC, SNOMED CT, UMLS, and RxNorm. Chart audit (HCC gap capture, RADV, specificity, denial risk), cross-standard translate, and PHI de-identification for EHR, billing, and health-tech apps.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -61,7 +61,15 @@
     "ai-icd-10",
     "automated-diagnosis-coding",
     "ai-medical-coder",
-    "computer-assisted-coding"
+    "computer-assisted-coding",
+    "rxnorm",
+    "loinc",
+    "icf",
+    "hcc-audit",
+    "raf",
+    "radv",
+    "chart-audit",
+    "medical-terminology"
   ],
   "author": "AutoICD",
   "license": "MIT",

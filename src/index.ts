@@ -57,6 +57,13 @@ export type {
   TranslateSource,
   ReferenceSystem,
   ReferenceCodeRecord,
+  SearchableReferenceSystem,
+  ReferenceSearchHit,
+  ReferenceSearchResponse,
+  SnomedCodeDetail,
+  UmlsAtomDetail,
+  UmlsCodeDetail,
+  RxnormCodeDetail,
 } from "./types.js";
 
 export {

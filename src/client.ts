@@ -23,6 +23,8 @@ import type {
   TranslateResponse,
   ReferenceSystem,
   ReferenceCodeRecord,
+  SearchableReferenceSystem,
+  ReferenceSearchResponse,
 } from "./types.js";
 import {
   AutoICDError,
@@ -422,6 +424,7 @@ class ReferenceCodes {
 
   /**
    * Look up canonical reference data for a code in any supported coding system.
+   * Supports ICD-10-CM, ICD-11, ICF, LOINC, SNOMED CT, UMLS, and RxNorm.
    *
    * Supersedes the per-system getters (`icd10.get`, `icd11.get`, `icf.lookup`,
    * `loinc.lookup`), which remain available but emit `Deprecation` and `Sunset`
@@ -433,11 +436,41 @@ class ReferenceCodes {
    * if (result.system === "icd-10-cm") {
    *   console.log(result.record.long_description);
    * }
+   *
+   * const concept = await autoicd.reference.lookup("snomed-ct", "44054006");
+   * if (concept.system === "snomed-ct") {
+   *   console.log(concept.record.preferred_term);
+   * }
    * ```
    */
   async lookup(system: ReferenceSystem, code: string): Promise<ReferenceCodeRecord> {
     return this.client.get<ReferenceCodeRecord>(
       `/api/v1/reference/${encodeURIComponent(system)}/${encodeURIComponent(code)}`
+    );
+  }
+
+  /**
+   * Search SNOMED CT, UMLS, or RxNorm by free-text query. JSON-backed systems
+   * (ICD-10-CM, ICD-11, ICF, LOINC) keep their per-system search endpoints
+   * (`autoicd.icd10.search`, `autoicd.icd11.search`, ...).
+   *
+   * @example
+   * ```ts
+   * const hits = await autoicd.reference.search("snomed-ct", "type 2 diabetes", { limit: 5 });
+   * for (const hit of hits.results) {
+   *   console.log(hit.code, hit.label, hit.meta);
+   * }
+   * ```
+   */
+  async search(
+    system: SearchableReferenceSystem,
+    query: string,
+    options?: { limit?: number },
+  ): Promise<ReferenceSearchResponse> {
+    const params = new URLSearchParams({ q: query });
+    if (options?.limit !== undefined) params.set("limit", String(options.limit));
+    return this.client.get<ReferenceSearchResponse>(
+      `/api/v1/reference/${encodeURIComponent(system)}/search?${params}`,
     );
   }
 }
