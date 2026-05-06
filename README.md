@@ -1,10 +1,10 @@
-# AutoICD API — TypeScript SDK
+# AutoICD API - TypeScript SDK
 
 [![npm version](https://img.shields.io/npm/v/autoicd.svg)](https://www.npmjs.com/package/autoicd)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-blue.svg)](https://www.typescriptlang.org/)
 
-Official TypeScript SDK for the [AutoICD API](https://autoicdapi.com) — AI medical coding that converts clinical text to ICD-10-CM, ICD-11, and ICF codes using medical NLP. Automate ICD-10 coding, ICF functioning classification, and disability assessment in your application.
+Official TypeScript SDK for the [AutoICD API](https://autoicdapi.com) - AI medical coding that converts clinical text to ICD-10-CM, ICD-11, and ICF codes using medical NLP. Automate ICD-10 coding, ICF functioning classification, and disability assessment in your application.
 
 Zero dependencies. Works in **Node.js 18+**, **Deno**, **Bun**, and **edge runtimes**.
 
@@ -12,7 +12,7 @@ Zero dependencies. Works in **Node.js 18+**, **Deno**, **Bun**, and **edge runti
 
 ---
 
-## What's new — 2026-05-05
+## What's new - 2026-05-05
 
 - **Phase 3 unified reference lookup.** A single `client.reference.lookup(system, code)` covers ICD-10-CM, ICD-11, ICF, LOINC, SNOMED CT, UMLS, and RxNorm. The legacy per-system getters (`icd10.get`, `icd11.get`, `icf.lookup`, `loinc.lookup`) keep working but the underlying routes now emit `Deprecation` and `Sunset` headers.
 - **Phase 4 SNOMED CT, UMLS, and RxNorm coverage.** Lookup canonical concept records (preferred terms, synonyms, semantic types) and search those vocabularies via `client.reference.search(system, query)`.
@@ -24,16 +24,16 @@ Zero dependencies. Works in **Node.js 18+**, **Deno**, **Bun**, and **edge runti
 
 | | |
 |---|---|
-| **AI-Powered ICD-10, ICD-11 & ICF Coding** | Clinical NLP extracts diagnoses from free-text notes and maps them to ICD-10-CM, ICD-11, or ICF codes — no manual lookup required |
+| **AI-Powered ICD-10, ICD-11 & ICF Coding** | Clinical NLP extracts diagnoses from free-text notes and maps them to ICD-10-CM, ICD-11, or ICF codes - no manual lookup required |
 | **Chart Audit with HCC Gap Capture** | Find missed HCCs, unsupported codes, and specificity upgrades with RAF-weighted revenue estimates (CMS v22 + v28 PY2026). Every finding carries evidence spans |
 | **Cross-Standard Code Translation** | Map a code between ICD-10, ICD-11, SNOMED CT, UMLS, and ICF in one call. Forward ICD-10 → all other systems, plus reverse ICD-11 → ICD-10 and ICF → ICD-10 |
 | **74,000+ ICD-10-CM Codes** | Full 2025 code set enriched with SNOMED CT synonyms for comprehensive matching |
 | **ICD-11 Support** | Search and look up ICD-11 codes, with full ICD-10 ↔ ICD-11 crosswalk mappings |
 | **ICF Functioning Codes** | Code clinical text to WHO ICF categories, search 1,400+ codes, and access Core Sets for 12+ conditions |
-| **Negation & Context Detection** | Knows the difference between "patient has diabetes" and "patient denies diabetes" — flags negated, historical, uncertain, and family-history mentions |
+| **Negation & Context Detection** | Knows the difference between "patient has diabetes" and "patient denies diabetes" - flags negated, historical, uncertain, and family-history mentions |
 | **PHI De-identification** | HIPAA-compliant anonymization of names, dates, SSNs, phone numbers, emails, addresses, MRNs, and ages |
 | **Confidence Scoring** | Every code match includes a similarity score and confidence level so you can set your own acceptance thresholds |
-| **Spell Correction** | Handles misspellings in clinical text — "diabeties" still maps to the right code |
+| **Spell Correction** | Handles misspellings in clinical text - "diabeties" still maps to the right code |
 | **Fully Type-Safe** | Complete TypeScript definitions for all requests and responses |
 | **Zero Dependencies** | Lightweight, no bloat, no supply-chain risk |
 
@@ -127,7 +127,7 @@ Read more about the Audit endpoint at [autoicdapi.com/audit](https://autoicdapi.
 
 ### Unified Reference Lookup (ICD-10, ICD-11, ICF, LOINC, SNOMED, UMLS, RxNorm)
 
-One call to fetch canonical record data for any code in any supported system. The response is a discriminated union — narrow on `result.system` to access the system-specific shape.
+One call to fetch canonical record data for any code in any supported system. The response is a discriminated union - narrow on `result.system` to access the system-specific shape.
 
 ```ts
 const icd10 = await autoicd.reference.lookup("icd-10-cm", "E11.9");
@@ -222,7 +222,7 @@ for (const entity of result.entities) {
   console.log(`  Historical: ${entity.historical}`);
   for (const match of entity.codes) {
     console.log(
-      `  ${match.code} — ${match.description} (${match.confidence}, ${(match.similarity * 100).toFixed(1)}%)`
+      `  ${match.code} - ${match.description} (${match.confidence}, ${(match.similarity * 100).toFixed(1)}%)`
     );
   }
 }
@@ -253,7 +253,7 @@ const results = await autoicd.icd10.search("heart failure", { limit: 5 });
 
 ### ICD-10 Code Details
 
-Get full details for any ICD-10-CM code — descriptions, billable status, synonyms, hierarchy, and chapter classification.
+Get full details for any ICD-10-CM code - descriptions, billable status, synonyms, hierarchy, and chapter classification.
 
 ```ts
 const detail = await autoicd.icd10.get("E11.9");
@@ -277,7 +277,7 @@ const results = await autoicd.icd11.search("heart failure", { limit: 5 });
 
 ### ICD-11 Code Details & Crosswalk
 
-Get full details for any ICD-11 code — descriptions, Foundation URI, hierarchy, synonyms, and ICD-10 crosswalk mappings.
+Get full details for any ICD-11 code - descriptions, Foundation URI, hierarchy, synonyms, and ICD-10 crosswalk mappings.
 
 ```ts
 const detail = await autoicd.icd11.get("5A11");
@@ -288,8 +288,8 @@ console.log(detail.chapter?.title);    // "Endocrine, nutritional or metabolic d
 
 // ICD-10 crosswalk
 for (const mapping of detail.icd10_mappings) {
-  console.log(`${mapping.code} — ${mapping.description} (${mapping.mapping_type})`);
-  // "E11.9 — Type 2 diabetes mellitus without complications (equivalent)"
+  console.log(`${mapping.code} - ${mapping.description} (${mapping.mapping_type})`);
+  // "E11.9 - Type 2 diabetes mellitus without complications (equivalent)"
 }
 ```
 
@@ -300,8 +300,8 @@ ICD-10 code details now include ICD-11 crosswalk mappings when available:
 ```ts
 const detail = await autoicd.icd10.get("E11.9");
 for (const mapping of detail.icd11_mappings ?? []) {
-  console.log(`${mapping.code} — ${mapping.description}`);
-  // "5A11 — Type 2 diabetes mellitus"
+  console.log(`${mapping.code} - ${mapping.description}`);
+  // "5A11 - Type 2 diabetes mellitus"
 }
 ```
 
@@ -379,13 +379,13 @@ Browse all 74,000+ codes in the [ICD-10-CM Code Directory](https://autoicdapi.co
 
 ## Use Cases
 
-- **EHR / EMR Integration** — Auto-code clinical notes as providers type, reducing manual coding burden
-- **Medical Billing & RCM** — Accelerate claim submission with accurate ICD-10 codes
-- **Clinical Decision Support** — Map patient conditions to standardized codes for analytics and alerts
-- **Health-Tech SaaS** — Add ICD-10 coding to your platform without building ML infrastructure
-- **Clinical Research** — Extract and standardize diagnoses from unstructured medical records
-- **Insurance & Payer Systems** — Validate and suggest diagnosis codes during claims processing
-- **Telehealth Platforms** — Generate diagnosis codes from visit notes and transcriptions
+- **EHR / EMR Integration** - Auto-code clinical notes as providers type, reducing manual coding burden
+- **Medical Billing & RCM** - Accelerate claim submission with accurate ICD-10 codes
+- **Clinical Decision Support** - Map patient conditions to standardized codes for analytics and alerts
+- **Health-Tech SaaS** - Add ICD-10 coding to your platform without building ML infrastructure
+- **Clinical Research** - Extract and standardize diagnoses from unstructured medical records
+- **Insurance & Payer Systems** - Validate and suggest diagnosis codes during claims processing
+- **Telehealth Platforms** - Generate diagnosis codes from visit notes and transcriptions
 
 ---
 
@@ -427,7 +427,7 @@ console.log(autoicd.lastRateLimit);
 
 ```ts
 const autoicd = new AutoICD({
-  apiKey: "sk_...",             // Required — get yours at https://autoicdapi.com
+  apiKey: "sk_...",             // Required - get yours at https://autoicdapi.com
   baseURL: "https://...",      // Default: https://autoicdapi.com
   timeout: 60_000,             // Default: 30000ms
   fetch: customFetch,          // Custom fetch (for testing or non-standard runtimes)
@@ -449,14 +449,14 @@ Full REST API documentation at [autoicdapi.com/docs](https://autoicdapi.com/docs
 | `autoicd.reference.lookup(system, code)` | Unified lookup across ICD-10-CM, ICD-11, ICF, LOINC, SNOMED CT, UMLS, RxNorm |
 | `autoicd.reference.search(system, query, options?)` | Free-text search of SNOMED CT, UMLS, or RxNorm |
 | `autoicd.icd10.search(query, options?)` | Search ICD-10-CM codes by description |
-| `autoicd.icd10.get(code)` | Get details for an ICD-10-CM code (deprecated — use `reference.lookup`) |
+| `autoicd.icd10.get(code)` | Get details for an ICD-10-CM code (deprecated - use `reference.lookup`) |
 | `autoicd.icd11.search(query, options?)` | Search ICD-11 codes by description |
-| `autoicd.icd11.get(code)` | Get details for an ICD-11 code (deprecated — use `reference.lookup`) |
-| `autoicd.icf.lookup(code)` | Get details for an ICF code (deprecated — use `reference.lookup`) |
+| `autoicd.icd11.get(code)` | Get details for an ICD-11 code (deprecated - use `reference.lookup`) |
+| `autoicd.icf.lookup(code)` | Get details for an ICF code (deprecated - use `reference.lookup`) |
 | `autoicd.icf.search(query, options?)` | Search ICF codes by keyword |
 | `autoicd.icf.coreSet(icd10Code)` | Get ICF Core Set for an ICD-10 diagnosis |
 | `autoicd.loinc.code(text, options?)` | Code clinical text to LOINC lab/observation codes |
-| `autoicd.loinc.lookup(code)` | Get details for a LOINC code (deprecated — use `reference.lookup`) |
+| `autoicd.loinc.lookup(code)` | Get details for a LOINC code (deprecated - use `reference.lookup`) |
 | `autoicd.loinc.search(query, options?)` | Search LOINC codes by description |
 
 ---
@@ -522,17 +522,17 @@ import type {
 
 ## Links
 
-- [AutoICD API](https://autoicdapi.com) — Homepage and API key management
-- [API Documentation](https://autoicdapi.com/docs) — Full REST API reference
-- [ICD-10-CM Code Directory](https://autoicdapi.com/reference/icd-10) — Browse all 74,000+ diagnosis codes
-- [ICD-11 Code Directory](https://autoicdapi.com/reference/icd-11) — Browse the WHO ICD-11 MMS hierarchy
-- [ICD-10 ↔ ICD-11 Crosswalk](https://autoicdapi.com/icd10-to-icd11) — Map codes between revisions
-- [ICD-10 Codes by Condition](https://autoicdapi.com/reference/icd-10/condition) — Find codes for common conditions
-- [Python SDK](https://pypi.org/project/autoicd/) — `pip install autoicd`
-- [AutoICD MCP Server](https://www.npmjs.com/package/autoicd-mcp) — For Claude Desktop, Cursor, VS Code, Windsurf, and the remote endpoint at `autoicdapi.com/api/mcp`
-- [Postman Collection](https://autoicdapi.com/docs) — Importable collection for the full REST surface
-- [SNOMED CT & UMLS Cross-References](https://autoicdapi.com/snomed-ct-umls) — Terminology mappings
-- [ICD-10-CM 2025 Code Set](https://www.cms.gov/medicare/coding-billing/icd-10-codes) — Official CMS reference
+- [AutoICD API](https://autoicdapi.com) - Homepage and API key management
+- [API Documentation](https://autoicdapi.com/docs) - Full REST API reference
+- [ICD-10-CM Code Directory](https://autoicdapi.com/reference/icd-10) - Browse all 74,000+ diagnosis codes
+- [ICD-11 Code Directory](https://autoicdapi.com/reference/icd-11) - Browse the WHO ICD-11 MMS hierarchy
+- [ICD-10 ↔ ICD-11 Crosswalk](https://autoicdapi.com/icd10-to-icd11) - Map codes between revisions
+- [ICD-10 Codes by Condition](https://autoicdapi.com/reference/icd-10/condition) - Find codes for common conditions
+- [Python SDK](https://pypi.org/project/autoicd/) - `pip install autoicd`
+- [AutoICD MCP Server](https://www.npmjs.com/package/autoicd-mcp) - For Claude Desktop, Cursor, VS Code, Windsurf, and the remote endpoint at `autoicdapi.com/api/mcp`
+- [Postman Collection](https://autoicdapi.com/docs) - Importable collection for the full REST surface
+- [SNOMED CT & UMLS Cross-References](https://autoicdapi.com/snomed-ct-umls) - Terminology mappings
+- [ICD-10-CM 2025 Code Set](https://www.cms.gov/medicare/coding-billing/icd-10-codes) - Official CMS reference
 
 ---
 
