@@ -1,6 +1,6 @@
 # AutoICD TypeScript SDK
 
-Public SDK for **AutoICD API** (autoicdapi.com). Published as `autoicd` on npm.
+Public SDK for **AutoICD API** (autoicdapi.com). Published as `autoicd-js` on npm.
 GitHub: `github.com/fcggamou/autoicd-js`
 
 ## Quick Reference

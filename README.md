@@ -1,6 +1,6 @@
 # AutoICD API - TypeScript SDK
 
-[![npm version](https://img.shields.io/npm/v/autoicd.svg)](https://www.npmjs.com/package/autoicd)
+[![npm version](https://img.shields.io/npm/v/autoicd-js.svg)](https://www.npmjs.com/package/autoicd-js)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-blue.svg)](https://www.typescriptlang.org/)
 
@@ -42,16 +42,16 @@ Zero dependencies. Works in **Node.js 18+**, **Deno**, **Bun**, and **edge runti
 ## Install
 
 ```bash
-npm install autoicd
+npm install autoicd-js
 ```
 
 <details>
 <summary>yarn / pnpm / bun</summary>
 
 ```bash
-yarn add autoicd
-pnpm add autoicd
-bun add autoicd
+yarn add autoicd-js
+pnpm add autoicd-js
+bun add autoicd-js
 ```
 
 </details>
@@ -61,7 +61,7 @@ bun add autoicd
 ## Quick Start
 
 ```ts
-import { AutoICD } from "autoicd";
+import { AutoICD } from "autoicd-js";
 
 const autoicd = new AutoICD({ apiKey: "sk_..." });
 
@@ -397,7 +397,7 @@ import {
   AuthenticationError,
   RateLimitError,
   NotFoundError,
-} from "autoicd";
+} from "autoicd-js";
 
 try {
   await autoicd.code("...");
@@ -508,7 +508,7 @@ import type {
   SnomedCodeDetail,
   UmlsCodeDetail,
   RxnormCodeDetail,
-} from "autoicd";
+} from "autoicd-js";
 ```
 
 ---
