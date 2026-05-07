@@ -448,6 +448,13 @@ export interface LOINCCodingResponse {
   text: string;
   provider: string;
   entity_count: number;
+  /**
+   * Per-entity LOINC coding results. Mirrors `entities` on `/v1/code` and
+   * `/v1/icd11/code`. Use this field for new code; the legacy `results`
+   * key carries the same payload and is kept for backward compatibility.
+   */
+  entities: LOINCCodingEntity[];
+  /** @deprecated Use `entities`. Kept for backward compatibility. */
   results: LOINCCodingEntity[];
 }
 
